@@ -125,8 +125,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         while (true){
             System.out.print(message);
             userInput = input.next().toLowerCase();
-            if ((userInput != null) && (!userInput.equals(""))
-                    && (userInput.matches(condition))){  // if the input fulfill the string format
+            if (userInput.matches(condition)){  // if the input fulfill the string format
                 break;
             }else {
                 System.out.println(errorMessage);
@@ -189,28 +188,42 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 
     @Override
     public void removeDoctor(Scanner input){
-        System.out.println("Removing Doctor");
-        for (Doctor doctor : doctorsList){
-            System.out.println(doctor.getMedicalLicenseNo() + "\t-->\t" + doctor.getName());
-        }
-        String medicalLicenceNo = stringValidation("Enter Doctor's medical licence number: ",input, "Id");
-        // searching algo
-        for (Doctor doctor: doctorsList){
-            if (doctor.getMedicalLicenseNo().equals(medicalLicenceNo)){
-                doctorsList.remove(doctor);
-                System.out.printf("Doctor %s %s have been removed..",doctor.getName(),doctor.getSurname());
-                break;
+        if (!doctorsList.isEmpty()){
+            System.out.println("Removing Doctor");
+            for (Doctor doctor : doctorsList){
+                System.out.println(doctor.getMedicalLicenseNo() + "\t-->\t" + doctor.getName());
             }
+//            String medicalLicenceNo = stringValidation("Enter Doctor's medical licence number: ",input, "Id");
+            String medicalLicenceNo;
+            do {
+                System.out.print("Enter Doctor's medical licence number: ");
+                medicalLicenceNo = input.next();
+            }while (!Doctor.getMedicalLicenseNoSet().contains(medicalLicenceNo));
+
+            // searching algo
+            for (Doctor doctor: doctorsList){
+                if (doctor.getMedicalLicenseNo().equals(medicalLicenceNo)){
+                    doctorsList.remove(doctor);
+                    System.out.printf("Doctor %s %s have been removed..",doctor.getName(),doctor.getSurname());
+                    break;
+                }
+            }
+        }else {
+            System.out.println("There aren't any doctors to remove..");
         }
     }
 
     @Override
     public void displayDoctors(){
-        System.out.println("Displaying details of all doctors..");
-        Doctor[] s1;
-        s1 = sortDoctors();
-        for (Doctor doctor: s1){
-            System.out.println(doctor);
+        if (!doctorsList.isEmpty()){
+            System.out.println("Displaying details of all doctors..");
+            Doctor[] s1;
+            s1 = sortDoctors();
+            for (Doctor doctor: s1){
+                System.out.println(doctor);
+            }
+        }else {
+            System.out.println("There aren't any doctors to display..");
         }
     }
 
