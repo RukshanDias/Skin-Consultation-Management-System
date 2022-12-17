@@ -219,9 +219,16 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             System.out.println("Displaying details of all doctors..");
             Doctor[] s1;
             s1 = sortDoctors();
-            for (Doctor doctor: s1){
-                System.out.println(doctor);
+
+            String leftAlignFormat = "| %-7s | %-8s | %-7s | %-8s |  %-8s | %-18s |%n";
+            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
+            System.out.format("| Name    | Surname  |  Birthday  | Mobile No  | License No| Specialisation    |%n");
+            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
+            for (Doctor doc: s1){
+                System.out.format(leftAlignFormat,doc.getName(), doc.getSurname(), doc.getDOB().toString(), doc.getMobileNo(), doc.getMedicalLicenseNo(), doc.getSpecialisation());
             }
+            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
+
         }else {
             System.out.println("There aren't any doctors to display..");
         }
