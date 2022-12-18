@@ -70,8 +70,8 @@ public class DoctorListFrame extends JFrame implements ActionListener {
         this.setSize(700,830);
         this.setVisible(true);
         this.setLayout(null);
+        this.setLocationRelativeTo(null);
         this.setResizable(false);
-        this.setLocation(650,50);
     }
 
     public static void main(String[] args) {

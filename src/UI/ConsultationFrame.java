@@ -122,7 +122,7 @@ public class ConsultationFrame extends JFrame {
         this.setSize(700,830);
         this.setVisible(true);
         this.setResizable(false);
-        this.setLocation(650,50);
+        this.setLocationRelativeTo(null);
     }
 
     public static void main(String[] args) {

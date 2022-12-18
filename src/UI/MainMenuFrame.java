@@ -77,6 +77,7 @@ public class MainMenuFrame extends JFrame implements ActionListener {
         this.setTitle("Westminster skin consultation center");
         this.setSize(400,600);
         this.setVisible(true);
+        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         this.setResizable(false);
     }
