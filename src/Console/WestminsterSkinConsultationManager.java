@@ -103,6 +103,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
      * This method is used to validate String inputs
      * @param message   text that display before getting input
      * @param input     Scanner object
+     * @param inputType type of input - name, number
      * @return  Fully validated String value
      */
     private static String stringValidation(String message, Scanner input, String inputType){
@@ -169,6 +170,11 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
         return userInput;
     }
+
+    /***
+     * This method is used to add Doctor to list
+     * @param input Scanner object
+     */
     @Override
     public void addDoctor(Scanner input){
         // check if there is a space left for doctors
@@ -189,6 +195,10 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
+    /***
+     * This method is used to remove a Doctor from list
+     * @param input - Scanner object
+     */
     @Override
     public void removeDoctor(Scanner input){
         if (!doctorsList.isEmpty()){
@@ -196,7 +206,6 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             for (Doctor doctor : doctorsList){
                 System.out.println(doctor.getMedicalLicenseNo() + "\t-->\t" + doctor.getName());
             }
-//            String medicalLicenceNo = stringValidation("Enter Doctor's medical licence number: ",input, "Id");
             String medicalLicenceNo;
             do {
                 System.out.print("Enter Doctor's medical licence number: ");
@@ -216,6 +225,9 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
+    /***
+     * This method is used to display details of doctors. sorted by surname
+     */
     @Override
     public void displayDoctors(){
         if (!doctorsList.isEmpty()){
@@ -237,6 +249,10 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
+    /**
+     * This method is used to sort Doctors by Surname and then First name
+     * @return an Array sorted by Surname and First name
+     */
     private static Doctor[] sortDoctors(){
         // copy linked list to array
         Doctor[] sortList = new Doctor[doctorsList.size()];
@@ -268,6 +284,9 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         }
     }
 
+    /***
+     * This method is used to Load data to system, from file
+     */
     @Override
     public void loadData(){
         try {
