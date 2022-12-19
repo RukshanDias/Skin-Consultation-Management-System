@@ -10,13 +10,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
-public class DoctorListFrame extends JFrame implements ActionListener {
+public class DoctorListFrame extends JFrame {
     WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
 
     LinkedList <Doctor> doctorList= WSCM.getDoctorsList();
     private JButton backBtn = new JButton();
     private JButton sortBtn = new JButton();
-
+    private JTable doctorTable = new JTable();
 
     public DoctorListFrame(){
         // Panels
@@ -31,11 +31,16 @@ public class DoctorListFrame extends JFrame implements ActionListener {
             docTableModel.addRow(new Object[] {doctor.getName(), doctor.getSurname(), doctor.getDOB(), doctor.getMobileNo(), doctor.getMedicalLicenseNo(), doctor.getSpecialisation()});
         }
 
-        JTable doctorTable = new JTable(docTableModel);
+//        JTable doctorTable = new JTable(docTableModel);
+        doctorTable.setAutoCreateRowSorter(true);
+        doctorTable.setModel(docTableModel);
         doctorTable.setBounds(0,40,200,300);
         doctorTable.setEnabled(false);
 
         JScrollPane scrollPane = new JScrollPane(doctorTable);
+
+        // register event handler
+        ButtonHandler buttonHandle = new ButtonHandler();
 
         // Sort button
         sortBtn.setText("Sort");
@@ -43,7 +48,7 @@ public class DoctorListFrame extends JFrame implements ActionListener {
         sortBtn.setHorizontalAlignment(SwingConstants.RIGHT);
         sortBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/sortLogo.png")));
         sortBtn.setFocusable(false);
-        sortBtn.addActionListener(this);
+        sortBtn.addActionListener(buttonHandle);
 
         // Back button
         backBtn.setText("Back");
@@ -51,7 +56,7 @@ public class DoctorListFrame extends JFrame implements ActionListener {
         backBtn.setHorizontalAlignment(SwingConstants.LEFT);
         backBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/backIcon.png")));
         backBtn.setFocusable(false);
-        backBtn.addActionListener(this);
+        backBtn.addActionListener(buttonHandle);
 
         // Title
         JLabel title = new JLabel("Doctors details");
@@ -78,11 +83,17 @@ public class DoctorListFrame extends JFrame implements ActionListener {
         DoctorListFrame d1= new DoctorListFrame();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == backBtn){
-            this.dispose();
-            new MainMenuFrame();
+    private class ButtonHandler implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == backBtn){
+                DoctorListFrame.this.dispose();
+                new MainMenuFrame();
+            } else if (e.getSource() == sortBtn) {
+                doctorTable.getRowSorter().toggleSortOrder(1);
+            }
         }
     }
+
 }
