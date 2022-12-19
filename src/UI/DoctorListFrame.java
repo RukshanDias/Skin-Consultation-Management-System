@@ -11,9 +11,9 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
 public class DoctorListFrame extends JFrame implements ActionListener {
-    WestminsterSkinConsultationManager westSkinMan = new WestminsterSkinConsultationManager();
+    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
 
-    LinkedList <Doctor> doctorList= westSkinMan.getDoctorsList();
+    LinkedList <Doctor> doctorList= WSCM.getDoctorsList();
     private JButton backBtn = new JButton();
     private JButton sortBtn = new JButton();
 

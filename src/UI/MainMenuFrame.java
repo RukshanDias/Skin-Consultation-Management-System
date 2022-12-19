@@ -1,11 +1,13 @@
 package UI;
 
+import Console.WestminsterSkinConsultationManager;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
-public class MainMenuFrame extends JFrame implements ActionListener {
+public class MainMenuFrame extends JFrame {
+    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
     private JButton displayDoctorsBtn = new JButton("<html><div style='border-radius:50%;'>");
     private JButton addConsultationBtn = new JButton();
     private JButton viewHistoryBtn = new JButton();
@@ -41,6 +43,10 @@ public class MainMenuFrame extends JFrame implements ActionListener {
         msgPanel.setBackground(mainBgColor);
         msgPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 40, 10)); // adding space between panels
 
+        // register event handler
+        ButtonHandler btnHandle = new ButtonHandler();
+        WindowHandler windowHandle = new WindowHandler();
+        this.addWindowListener(windowHandle);
 
         // Menu options
         optionsPanel.setLayout(new GridLayout(3,1,20,25));
@@ -48,17 +54,17 @@ public class MainMenuFrame extends JFrame implements ActionListener {
         displayDoctorsBtn.setText("View Doctor List");
         displayDoctorsBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/doctor1.png")));
         displayDoctorsBtn.setFocusable(false);
-        displayDoctorsBtn.addActionListener(this);
+        displayDoctorsBtn.addActionListener(btnHandle);
 
         addConsultationBtn.setText("Add a consultation");
         addConsultationBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/calendar1.png")));
         addConsultationBtn.setFocusable(false);
-        addConsultationBtn.addActionListener(this);
+        addConsultationBtn.addActionListener(btnHandle);
 
         viewHistoryBtn.setText("View appointment History");
         viewHistoryBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/history.png")));
         viewHistoryBtn.setFocusable(false);
-        viewHistoryBtn.addActionListener(this);
+        viewHistoryBtn.addActionListener(btnHandle);
 
         // Adding elements to panels and frame
         optionsPanel.add(displayDoctorsBtn);
@@ -78,18 +84,37 @@ public class MainMenuFrame extends JFrame implements ActionListener {
         this.setSize(400,600);
         this.setVisible(true);
         this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setResizable(false);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == displayDoctorsBtn){
-            this.dispose();
-            new DoctorListFrame();
-        } else if (e.getSource() == addConsultationBtn) {
-            this.dispose();
-            new ConsultationFrame();
+    private class ButtonHandler implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == displayDoctorsBtn){
+                MainMenuFrame.this.setVisible(false);
+                new DoctorListFrame();
+            } else if (e.getSource() == addConsultationBtn) {
+                MainMenuFrame.this.dispose();
+                new ConsultationFrame();
+            }
+        }
+    }
+
+    private class WindowHandler extends WindowAdapter {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            int confirmed = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to exit the program?", "Exit Program Message Box",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirmed == JOptionPane.YES_OPTION) {
+//                dispose();
+                super.windowClosing(e);
+                WSCM.setIsGuiOpen(false);
+            }else {
+                setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+            }
         }
     }
 }

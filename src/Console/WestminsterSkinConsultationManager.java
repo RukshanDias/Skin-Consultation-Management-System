@@ -10,7 +10,7 @@ import java.util.*;
 public class WestminsterSkinConsultationManager implements SkinConsultationManager{
     private static final int MAX_DOCTORS_COUNT = 7;
     private static LinkedList<Doctor> doctorsList = new LinkedList<>();
-
+    private static boolean isGuiOpen=false;
 
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
@@ -58,7 +58,12 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                 case "4" -> westSkinConsultCenter.storeData();
                 case "5" -> westSkinConsultCenter.loadData();
                 case "6" -> {
-                    MainMenuFrame mainMenuFrame = new MainMenuFrame();
+                    if (isGuiOpen){
+                        System.out.println("GUI is already opened.");
+                    }else {
+                        MainMenuFrame mainMenuFrame = new MainMenuFrame();
+                        isGuiOpen = true;
+                    }
                 }
                 case "99" -> {
                     System.out.println("Programme terminated...\nSee you again..");
@@ -288,5 +293,9 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
 
     public LinkedList<Doctor> getDoctorsList() {
         return doctorsList;
+    }
+
+    public void setIsGuiOpen(boolean isGuiOpen) {
+        WestminsterSkinConsultationManager.isGuiOpen = isGuiOpen;
     }
 }
