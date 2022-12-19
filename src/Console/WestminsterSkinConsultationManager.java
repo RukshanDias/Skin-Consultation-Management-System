@@ -10,7 +10,7 @@ import java.util.*;
 public class WestminsterSkinConsultationManager implements SkinConsultationManager{
     private static final int MAX_DOCTORS_COUNT = 7;
     private static LinkedList<Doctor> doctorsList = new LinkedList<>();
-    private static boolean isGuiOpen=false;
+    private static boolean isGuiOpen = false;
 
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
@@ -36,12 +36,10 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         menuLoop:
         while (true){
             System.out.println("""
-                    \n
-                    -----------------MENU--------------------
+                    \n-----------------MENU--------------------
                     Select a number from below
-                    \n
-                    \t1 --> Add Console.Doctor
-                    \t2 --> Remove Console.Doctor
+                    \t1 --> Add Doctor
+                    \t2 --> Remove Doctor
                     \t3 --> Display all Doctors
                     \t4 --> Save Doctors in a file
                     \t5 --> Read Doctors from file
@@ -61,7 +59,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     if (isGuiOpen){
                         System.out.println("GUI is already opened.");
                     }else {
-                        MainMenuFrame mainMenuFrame = new MainMenuFrame();
+                        new MainMenuFrame();
                         isGuiOpen = true;
                     }
                 }
@@ -226,13 +224,13 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             s1 = sortDoctors();
 
             String leftAlignFormat = "| %-7s | %-8s | %-7s | %-8s |  %-8s | %-18s |%n";
-            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
-            System.out.format("| Name    | Surname  |  Birthday  | Mobile No  | License No| Specialisation    |%n");
-            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
+            System.out.format("+---------+----------+------------+------------+-----------+--------------------+%n");
+            System.out.format("| Name    | Surname  |  Birthday  | Mobile No  | License No|  Specialisation    |%n");
+            System.out.format("+---------+----------+------------+------------+-----------+--------------------+%n");
             for (Doctor doc: s1){
                 System.out.format(leftAlignFormat,doc.getName(), doc.getSurname(), doc.getDOB().toString(), doc.getMobileNo(), doc.getMedicalLicenseNo(), doc.getSpecialisation());
             }
-            System.out.format("+---------+----------+------------+------------+-----------+-------------------+%n");
+            System.out.format("+---------+----------+------------+------------+-----------+--------------------+%n");
 
         }else {
             System.out.println("There aren't any doctors to display..");
@@ -277,7 +275,15 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
             while ((fileInputStream.available() > 0)){
-                doctorsList.add((Doctor) objectInputStream.readObject());
+                Doctor docObj = (Doctor) objectInputStream.readObject();
+
+                // check Medical Num is unique
+                if (!Doctor.getMedicalLicenseNoSet().contains(docObj.getMedicalLicenseNo())){
+                    doctorsList.add(docObj);
+                    Doctor.getMedicalLicenseNoSet().add(docObj.getMedicalLicenseNo()); //adding Medical No to HashSet
+                }
+
+                // check the list size reach max length
                 if (doctorsList.size() >= MAX_DOCTORS_COUNT){
                     System.out.println("Doctor list is currently full\ncannot add more Doctors..");
                     break;
