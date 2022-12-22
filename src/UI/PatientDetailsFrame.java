@@ -5,9 +5,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.awt.geom.Line2D;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 public class PatientDetailsFrame extends JFrame {
     private JLabel hoursLabel;
@@ -15,10 +16,13 @@ public class PatientDetailsFrame extends JFrame {
     private JButton addFileBtn;
     private JLabel addFileStatus;
     private JButton placeAppointmentBtn;
+    private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText;
+    private static String errors = "";
     public PatientDetailsFrame() {
         // register event handler
         ChangeHandler changeHandle = new ChangeHandler();
         ButtonHandler btnHandle = new ButtonHandler();
+        KeyHandler keyHandle = new KeyHandler();
 
         Container c = getContentPane();
         c.setLayout(null);
@@ -71,13 +75,13 @@ public class PatientDetailsFrame extends JFrame {
         }
 
         // Text fields
-        JTextField nameText = new JTextField();
-        JTextField surnameText = new JTextField();
-        JTextField dobDateText = new JTextField();
+        nameText = new JTextField();
+        surnameText = new JTextField();
+        dobDateText = new JTextField();
         JTextField dobMonthText = new JTextField();
         JTextField dobYearText = new JTextField();
-        JTextField mobileNoText = new JTextField();
-        JTextField patientIdText = new JTextField();
+        mobileNoText = new JTextField();
+        patientIdText = new JTextField();
 
         JTextField[] textFieldList = {nameText, surnameText, dobDateText,mobileNoText,patientIdText};
 
@@ -87,6 +91,7 @@ public class PatientDetailsFrame extends JFrame {
             textField.setFont(new Font("Arial", Font.PLAIN, 15));
             textField.setSize(190, 20);
             textField.setLocation(textFiledX, textFiledY);
+            textField.addKeyListener(keyHandle);
             c.add(textField);
             textFiledY += 50;
         }
@@ -125,6 +130,7 @@ public class PatientDetailsFrame extends JFrame {
         placeAppointmentBtn = new JButton("Place Appointment");
         placeAppointmentBtn.setBounds(240,635, 240,50);
         placeAppointmentBtn.setFont(new Font("Arial", Font.PLAIN, 25));
+        placeAppointmentBtn.addActionListener(btnHandle);
         c.add(placeAppointmentBtn);
 
         // setting view
@@ -136,6 +142,13 @@ public class PatientDetailsFrame extends JFrame {
         this.setResizable(false);
     }
 
+    public static void inputValidation(JTextField textField, String regex){
+        if (!textField.getText().matches(regex)){
+            textField.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+        }else {
+            textField.setBorder(BorderFactory.createLineBorder(Color.green, 2));
+        }
+    }
     public static void main(String[] args) {
         new PatientDetailsFrame();
     }
@@ -158,7 +171,37 @@ public class PatientDetailsFrame extends JFrame {
                 }else {
                     addFileStatus.setText("No file selected");
                 }
+            } else if (e.getSource() == placeAppointmentBtn) {
+                if (!errors.isEmpty()){
+                    JOptionPane.showMessageDialog(placeAppointmentBtn, "Enter a valid Number","ERROR", JOptionPane.ERROR_MESSAGE);
+                }
             }
+        }
+    }
+
+    private class KeyHandler extends KeyAdapter {
+        @Override
+        public void keyReleased(KeyEvent e) {
+             if (e.getSource() == nameText) {
+                inputValidation(nameText, "^[a-zA-Z]*$");
+            } else if (e.getSource() == surnameText) {
+                 inputValidation(surnameText, "^[a-zA-Z]*$");
+             } else if (e.getSource() == dobDateText) {
+                 try {
+                     LocalDate DOB = LocalDate.parse(dobDateText.getText());
+                     if(DOB.isBefore(LocalDate.now())){
+                         dobDateText.setBorder(BorderFactory.createLineBorder(Color.green, 2));
+                     }else {
+                         dobDateText.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+                     }
+                 }catch (DateTimeParseException d){
+                     dobDateText.setBorder(BorderFactory.createLineBorder(Color.red,3));
+                 }
+             } else if (e.getSource() == mobileNoText) {
+                 inputValidation(mobileNoText, "^[0-9]{10}$");
+             } else if (e.getSource() == patientIdText) {
+                 inputValidation(patientIdText, "^[a-zA-Z0-9]+$");
+             }
         }
     }
 }
