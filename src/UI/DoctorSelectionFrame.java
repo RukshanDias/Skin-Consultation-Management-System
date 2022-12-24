@@ -1,5 +1,6 @@
 package UI;
 
+import Console.Consultation;
 import Console.Doctor;
 import Console.WestminsterSkinConsultationManager;
 
@@ -16,9 +17,11 @@ public class DoctorSelectionFrame extends JFrame {
     private JButton backBtn = new JButton();
     private JButton nextBtn = new JButton();
     private JTable doctorTable = new JTable();
+    private JRadioButton[] doctorRadioBtn = new JRadioButton[doctorList.size()];
 
     public DoctorSelectionFrame() {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,120,20));
+        JPanel doctorSelectPanel = new JPanel();
 
         // Table
         Object[] colNames = {"Name", "Surname", "specialisation"};
@@ -51,16 +54,33 @@ public class DoctorSelectionFrame extends JFrame {
         JLabel title = new JLabel("Select a Doctor");
         title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
 
+        // Radio Btn - Doctor select
+        doctorSelectPanel.setLayout(new BoxLayout(doctorSelectPanel, BoxLayout.Y_AXIS));
+        doctorSelectPanel.add(new JLabel("Select a Doctor"));
+
+        ButtonGroup buttonGroup = new ButtonGroup();
+        int locationY = 150;
+        for (int i=0; i<doctorList.size(); i++){
+            doctorRadioBtn[i] = new JRadioButton(doctorList.get(i).getName());
+            buttonGroup.add(doctorRadioBtn[i]);
+            doctorRadioBtn[i].setBounds(120,locationY,120,50);
+            doctorSelectPanel.add(doctorRadioBtn[i]);
+            locationY += 10;
+        }
+        nextBtn.setText("Next");
+        doctorSelectPanel.add(nextBtn);
+
         // adding elements
         topPanel.add(backBtn);
         topPanel.add(title);
 
         this.add(topPanel, BorderLayout.NORTH);
+        this.add(doctorSelectPanel, BorderLayout.EAST);
         this.add(scrollPane);
 
         // setting view
         this.setTitle("View doctors' details");
-        this.setSize(700,830);
+        this.setSize(700,630);
         this.setVisible(true);
         this.setLayout(null);
         this.setLocationRelativeTo(null);
@@ -77,6 +97,10 @@ public class DoctorSelectionFrame extends JFrame {
             if (e.getSource() == backBtn){
                 DoctorSelectionFrame.this.dispose();
                 new MainMenuFrame();
+            } else if (e.getSource() == nextBtn) {
+                Consultation consultation = new Consultation();
+//                consultation.setDoctor();
+                new PatientDetailsFrame(consultation);
             }
         }
     }
