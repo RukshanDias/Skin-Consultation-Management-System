@@ -68,6 +68,7 @@ public class DoctorSelectionFrame extends JFrame {
             locationY += 10;
         }
         nextBtn.setText("Next");
+        nextBtn.addActionListener(buttonHandle);
         doctorSelectPanel.add(nextBtn);
 
         // adding elements
@@ -90,6 +91,15 @@ public class DoctorSelectionFrame extends JFrame {
     public static void main(String[] args) {
         new DoctorSelectionFrame();
     }
+    public int getSelectedRadioBtn(JRadioButton[] doctorRadioBtn){
+        for (int i=0; i<doctorRadioBtn.length; i++){
+            if (doctorRadioBtn[i].isSelected()){
+                return i;
+            }
+        }
+        return -1; // nothing selected
+    }
+
     private class ButtonHandler implements ActionListener {
 
         @Override
@@ -98,9 +108,15 @@ public class DoctorSelectionFrame extends JFrame {
                 DoctorSelectionFrame.this.dispose();
                 new MainMenuFrame();
             } else if (e.getSource() == nextBtn) {
-                Consultation consultation = new Consultation();
-//                consultation.setDoctor();
-                new PatientDetailsFrame(consultation);
+                int selectedDoctor = getSelectedRadioBtn(doctorRadioBtn);
+                if (selectedDoctor < 0){
+                    JOptionPane.showMessageDialog(nextBtn, "Pls select a Doctor","ERROR", JOptionPane.ERROR_MESSAGE);
+                }else {
+                    Consultation consultation = new Consultation();
+                    consultation.setDoctor(doctorList.get(selectedDoctor));
+                    DoctorSelectionFrame.this.dispose();
+                    new PatientDetailsFrame(consultation);
+                }
             }
         }
     }
