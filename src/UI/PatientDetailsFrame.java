@@ -1,5 +1,7 @@
 package UI;
 
+import Console.Consultation;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -17,8 +19,10 @@ public class PatientDetailsFrame extends JFrame {
     private JLabel addFileStatus;
     private JButton placeAppointmentBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText;
-    private static String errors = "";
-    public PatientDetailsFrame() {
+    private JTextField[] textFieldList;
+    private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
+
+    public PatientDetailsFrame(Consultation consultation) {
         // register event handler
         ChangeHandler changeHandle = new ChangeHandler();
         ButtonHandler btnHandle = new ButtonHandler();
@@ -83,7 +87,7 @@ public class PatientDetailsFrame extends JFrame {
         mobileNoText = new JTextField();
         patientIdText = new JTextField();
 
-        JTextField[] textFieldList = {nameText, surnameText, dobDateText,mobileNoText,patientIdText};
+        textFieldList = new JTextField[]{nameText, surnameText, dobDateText, mobileNoText, patientIdText};
 
         int textFiledX = 530;
         int textFiledY = 100;
@@ -142,16 +146,25 @@ public class PatientDetailsFrame extends JFrame {
         this.setResizable(false);
     }
 
-    public static void inputValidation(JTextField textField, String regex){
+    public static boolean inputValidation(JTextField textField, String regex){
+        boolean isInputValid;
         if (!textField.getText().matches(regex)){
             textField.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+            isInputValid = false;
         }else {
             textField.setBorder(BorderFactory.createLineBorder(Color.green, 2));
+            isInputValid = true;
+        }
+        return isInputValid;
+    }
+    public static void markEmptyInputs(JTextField[] textField){
+        for (JTextField text: textField){
+            if (text.getText().isEmpty()){
+                text.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+            }
         }
     }
-    public static void main(String[] args) {
-        new PatientDetailsFrame();
-    }
+
     private class ChangeHandler implements ChangeListener{
         @Override
         public void stateChanged(ChangeEvent e) {
@@ -172,8 +185,9 @@ public class PatientDetailsFrame extends JFrame {
                     addFileStatus.setText("No file selected");
                 }
             } else if (e.getSource() == placeAppointmentBtn) {
-                if (!errors.isEmpty()){
-                    JOptionPane.showMessageDialog(placeAppointmentBtn, "Enter a valid Number","ERROR", JOptionPane.ERROR_MESSAGE);
+                if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid)){
+                    markEmptyInputs(textFieldList);
+                    JOptionPane.showMessageDialog(placeAppointmentBtn, "Invalid or Empty input.\nThose have marked in red.","ERROR", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -183,24 +197,27 @@ public class PatientDetailsFrame extends JFrame {
         @Override
         public void keyReleased(KeyEvent e) {
              if (e.getSource() == nameText) {
-                inputValidation(nameText, "^[a-zA-Z]*$");
+                isNameValid = inputValidation(nameText, "^[a-zA-Z]*$");
             } else if (e.getSource() == surnameText) {
-                 inputValidation(surnameText, "^[a-zA-Z]*$");
+                 isSurnameValid = inputValidation(surnameText, "^[a-zA-Z]*$");
              } else if (e.getSource() == dobDateText) {
                  try {
                      LocalDate DOB = LocalDate.parse(dobDateText.getText());
                      if(DOB.isBefore(LocalDate.now())){
                          dobDateText.setBorder(BorderFactory.createLineBorder(Color.green, 2));
+                         isDobValid = true;
                      }else {
                          dobDateText.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+                         isDobValid = false;
                      }
                  }catch (DateTimeParseException d){
                      dobDateText.setBorder(BorderFactory.createLineBorder(Color.red,3));
+                     isDobValid = false;
                  }
              } else if (e.getSource() == mobileNoText) {
-                 inputValidation(mobileNoText, "^[0-9]{10}$");
+                 isMobileNoValid = inputValidation(mobileNoText, "^[0-9]{10}$");
              } else if (e.getSource() == patientIdText) {
-                 inputValidation(patientIdText, "^[a-zA-Z0-9]+$");
+                 isPatientIdValid = inputValidation(patientIdText, "^[a-zA-Z0-9]+$");
              }
         }
     }
