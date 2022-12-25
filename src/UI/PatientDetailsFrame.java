@@ -1,6 +1,7 @@
 package UI;
 
 import Console.Consultation;
+import Console.Patient;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -9,20 +10,27 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 
 public class PatientDetailsFrame extends JFrame {
-    private JLabel hoursLabel;
+    private Consultation consultation;
+    private static ArrayList<Patient> patientList;
+    private static ArrayList<Consultation> consultationList;
+    private JLabel hoursLabel, addFileStatus;
+    private JTextArea notesText;
     private JSlider hourSlider;
-    private JButton addFileBtn;
-    private JLabel addFileStatus;
-    private JButton placeAppointmentBtn;
+    private JButton addFileBtn, placeAppointmentBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText;
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
 
     public PatientDetailsFrame(Consultation consultation) {
+        // passing consultation to attribute
+        this.consultation = consultation;
+
         // register event handler
         ChangeHandler changeHandle = new ChangeHandler();
         ButtonHandler btnHandle = new ButtonHandler();
@@ -115,7 +123,7 @@ public class PatientDetailsFrame extends JFrame {
         c.add(hourSlider);
 
         // Text area for notes
-        JTextArea notesText = new JTextArea(5,30);
+        notesText = new JTextArea(5,30);
         notesText.setBounds(500,405, 230,150);
         c.add(notesText);
 
@@ -144,6 +152,44 @@ public class PatientDetailsFrame extends JFrame {
         this.setLayout(null);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+    }
+
+    public static void storeConsultationsData(){
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream("consultationsData.txt");
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+
+            for (Consultation consultation : consultationList){
+                objectOutputStream.writeObject(consultation);
+            }
+            objectOutputStream.close();
+            System.out.println("Data successfully stored in a file..");
+        }catch (IOException e){
+            System.out.println("An error occurred.." + e);
+        }
+    }
+
+    public static void loadConsultationsData(){
+        try {
+            FileInputStream fileInputStream = new FileInputStream("consultationsData.txt");
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+            while ((fileInputStream.available() > 0)){
+                Consultation consultationObj = (Consultation) objectInputStream.readObject();
+
+                if (!consultationList.contains(consultationObj)){
+                    consultationList.add(consultationObj);
+                }
+                if (!patientList.contains(consultationObj.getPatient())){
+                    patientList.add(consultationObj.getPatient());
+                }
+            }
+            System.out.println("File successfully loaded..");
+        }catch (IOException e){
+            System.out.println("an error occurred when loading data "+ e);
+        } catch (ClassNotFoundException e) {
+            System.out.println("Clas not found..");
+        }
     }
 
     public static boolean inputValidation(JTextField textField, String regex){
@@ -188,6 +234,38 @@ public class PatientDetailsFrame extends JFrame {
                 if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid)){
                     markEmptyInputs(textFieldList);
                     JOptionPane.showMessageDialog(placeAppointmentBtn, "Invalid or Empty input.\nThose have marked in red.","ERROR", JOptionPane.ERROR_MESSAGE);
+                }else {
+                    String patientName = nameText.getText();
+                    String patientSurname = surnameText.getText();
+                    LocalDate patientDOB = LocalDate.parse(dobDateText.getText());
+                    String patientMobileNo = mobileNoText.getText();
+                    String patientID = patientIdText.getText();
+                    String notes = notesText.getText();
+                    int duration = hourSlider.getValue();
+
+                    // checking new user
+                    boolean isNewUser = true;
+                    Patient oldPatient = null;
+                    for (Patient patient: patientList){
+                        if (patient.getPatientId().equals(patientID)){
+                            isNewUser = false;
+                            oldPatient = patient;
+                            break;
+                        }
+                    }
+
+                    if (isNewUser){
+                        Patient newPatient = new Patient(patientName,patientSurname,patientDOB,patientMobileNo,patientID);
+                        consultation.setPatient(newPatient);
+                        consultation.setCost(consultation.calculateTotalCost(newPatient));
+                    }else {
+                        consultation.setPatient(oldPatient);
+                        consultation.setCost(consultation.calculateTotalCost(oldPatient));
+                    }
+                    consultation.setNote(notes);
+
+                    consultationList.add(consultation);
+                    storeConsultationsData();
                 }
             }
         }

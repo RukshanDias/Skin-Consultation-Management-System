@@ -10,10 +10,12 @@ public class Consultation {
     private LocalTime duration;
     private double cost;
     private String note;
-    private static int consultationCount = 0;
     private final static double normalCost = 25.00;
     private final static double firstConsulCost = 15.00;
 
+    public Consultation(){
+
+    }
     public Consultation(Doctor doctor, Patient patient, LocalDate date, LocalTime duration, double cost, String note) {
         this.doctor = doctor;
         this.patient = patient;
@@ -22,19 +24,39 @@ public class Consultation {
         this.cost = cost;
         this.note = note;
     }
-    public boolean isFirstConsultation(){
-        if (consultationCount > 1){
-            return false;
-        }return true;
-    }
 
-    public double calculateTotalCost(){
+    public double calculateTotalCost(Patient patient){
         int durationHours = this.duration.getHour();
-        double totalCost = (isFirstConsultation()) ? durationHours * firstConsulCost : durationHours * normalCost;
+        double totalCost = (patient.getConsultationCount() < 1) ? durationHours * firstConsulCost : durationHours * normalCost;
         return totalCost;
     }
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setDuration(LocalTime duration) {
+        this.duration = duration;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public double calculateCostPerHour(){
+        double costPerHour = (this.patient.getConsultationCount() < 1) ? firstConsulCost : normalCost;
+        return costPerHour;
     }
 }
