@@ -2,6 +2,8 @@ package UI;
 
 import Console.Consultation;
 import Console.Patient;
+import Console.WestminsterSkinConsultationManager;
+import Console.Doctor;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -12,21 +14,29 @@ import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Random;
 
 public class PatientDetailsFrame extends JFrame {
+    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
+    LinkedList<Doctor> doctorList= WSCM.getDoctorsList();
     private Consultation consultation;
-    private static ArrayList<Patient> patientList;
-    private static ArrayList<Consultation> consultationList;
+    private static ArrayList<Patient> patientList = new ArrayList<>();
+    private static ArrayList<Consultation> consultationList = new ArrayList<>();
     private JLabel hoursLabel, addFileStatus;
     private JTextArea notesText;
     private JSlider hourSlider;
-    private JButton addFileBtn, placeAppointmentBtn;
-    private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText;
+    private JButton addFileBtn, placeAppointmentBtn, backBtn;
+    private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText, startTimeText;
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
 
+    public PatientDetailsFrame(){}
     public PatientDetailsFrame(Consultation consultation) {
         // passing consultation to attribute
         this.consultation = consultation;
@@ -45,6 +55,16 @@ public class PatientDetailsFrame extends JFrame {
         title.setSize(300, 30);
         title.setLocation(300, 30);
         c.add(title);
+
+        // Back button
+        backBtn = new JButton();
+        backBtn.setText("Back to main menu");
+        backBtn.setBounds(75,50,350,40);
+        backBtn.setHorizontalAlignment(SwingConstants.LEFT);
+        backBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/backIcon.png")));
+        backBtn.setFocusable(false);
+        backBtn.addActionListener(btnHandle);
+        c.add(backBtn);
 
         // add by patient ID
         JLabel addByPatientId = new JLabel("Enter Patient ID:");
@@ -72,9 +92,11 @@ public class PatientDetailsFrame extends JFrame {
         JLabel dobLabel = new JLabel("Date of birth:");
         JLabel mobileNoLabel = new JLabel("Mobile Number:");
         JLabel patientIdLabel = new JLabel("Patient ID:");
+        JLabel ConsultationDateLabel = new JLabel("Date:");
+        JLabel startTimeLabel = new JLabel("Start time:");
         hoursLabel = new JLabel("Duration:");
         JLabel notesLabel =  new JLabel("Notes:");
-        JLabel [] labelList = {nameLabel, surnameLabel, dobLabel, mobileNoLabel, patientIdLabel, hoursLabel, notesLabel};
+        JLabel [] labelList = {nameLabel, surnameLabel, dobLabel, mobileNoLabel, patientIdLabel, ConsultationDateLabel, startTimeLabel, hoursLabel, notesLabel};
 
         int labelX = 430;
         int labelY = 100;
@@ -83,7 +105,7 @@ public class PatientDetailsFrame extends JFrame {
             label.setSize(100, 20);
             label.setLocation(labelX, labelY);
             c.add(label);
-            labelY += 50;
+            labelY += 40;
         }
 
         // Text fields
@@ -94,8 +116,10 @@ public class PatientDetailsFrame extends JFrame {
         JTextField dobYearText = new JTextField();
         mobileNoText = new JTextField();
         patientIdText = new JTextField();
+        consultationDateText = new JTextField();
+        startTimeText = new JTextField();
 
-        textFieldList = new JTextField[]{nameText, surnameText, dobDateText, mobileNoText, patientIdText};
+        textFieldList = new JTextField[]{nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText, startTimeText};
 
         int textFiledX = 530;
         int textFiledY = 100;
@@ -105,7 +129,7 @@ public class PatientDetailsFrame extends JFrame {
             textField.setLocation(textFiledX, textFiledY);
             textField.addKeyListener(keyHandle);
             c.add(textField);
-            textFiledY += 50;
+            textFiledY += 40;
         }
 
         // adding other components
@@ -118,24 +142,24 @@ public class PatientDetailsFrame extends JFrame {
         hourSlider.setPaintTrack(true);
         hourSlider.setPaintTicks(true);
         hourSlider.setPaintLabels(true);
-        hourSlider.setBounds(520,335, 200, 70);
+        hourSlider.setBounds(520,355, 200, 70);
         hourSlider.addChangeListener(changeHandle);
         c.add(hourSlider);
 
         // Text area for notes
         notesText = new JTextArea(5,30);
-        notesText.setBounds(500,405, 230,150);
+        notesText.setBounds(500,425, 230,150);
         c.add(notesText);
 
         // File import button
         addFileBtn = new JButton("Add file");
-        addFileBtn.setBounds(740,405, 80,25);
+        addFileBtn.setBounds(740,435, 80,25);
         addFileBtn.addActionListener(btnHandle);
         c.add(addFileBtn);
 
         // File status
         addFileStatus = new JLabel("No file selected");
-        addFileStatus.setBounds(740,435, 190,25);
+        addFileStatus.setBounds(740,465, 190,25);
         c.add(addFileStatus);
 
         // Place appointment button
@@ -154,6 +178,14 @@ public class PatientDetailsFrame extends JFrame {
         this.setResizable(false);
     }
 
+    public ArrayList<Patient> getPatientList() {
+        return patientList;
+    }
+
+    public ArrayList<Consultation> getConsultationList() {
+        return consultationList;
+    }
+
     public static void storeConsultationsData(){
         try {
             FileOutputStream fileOutputStream = new FileOutputStream("consultationsData.txt");
@@ -169,7 +201,7 @@ public class PatientDetailsFrame extends JFrame {
         }
     }
 
-    public static void loadConsultationsData(){
+    public void loadConsultationsData(){
         try {
             FileInputStream fileInputStream = new FileInputStream("consultationsData.txt");
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -210,6 +242,18 @@ public class PatientDetailsFrame extends JFrame {
             }
         }
     }
+    public boolean isDoctorAvailable (Doctor doctor, LocalDateTime startTime, LocalDateTime endTime){
+        boolean doctorAvailability = false;
+        System.out.println("in doc available meth");
+        ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = doctor.getConsultationTimeslots();
+        for (ArrayList<LocalDateTime> timeslot : consultationTimeslots) {
+            if ((timeslot.get(0).isAfter(endTime))
+                    && (timeslot.get(1).isBefore(startTime))) {
+                doctorAvailability = true;
+            }
+        }
+        return doctorAvailability;
+    }
 
     private class ChangeHandler implements ChangeListener{
         @Override
@@ -230,6 +274,9 @@ public class PatientDetailsFrame extends JFrame {
                 }else {
                     addFileStatus.setText("No file selected");
                 }
+            } else if (e.getSource() == backBtn) {
+                PatientDetailsFrame.this.dispose();
+                new MainMenuFrame();
             } else if (e.getSource() == placeAppointmentBtn) {
                 if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid)){
                     markEmptyInputs(textFieldList);
@@ -240,8 +287,29 @@ public class PatientDetailsFrame extends JFrame {
                     LocalDate patientDOB = LocalDate.parse(dobDateText.getText());
                     String patientMobileNo = mobileNoText.getText();
                     String patientID = patientIdText.getText();
+                    LocalDate consultationDate = LocalDate.parse(consultationDateText.getText());
+                    LocalTime startTime = LocalTime.parse(startTimeText.getText());
                     String notes = notesText.getText();
-                    int duration = hourSlider.getValue();
+                    long duration = hourSlider.getValue();
+
+                    // converting dateTime
+                    LocalDateTime consultationStartDateTime = consultationDate.atTime(startTime);
+                    LocalTime endTime = startTime.plusHours(duration);
+                    LocalDateTime consultationEndDateTime = consultationDate.atTime(endTime);
+
+                    // add time data to consultation
+                    consultation.setDuration(LocalTime.ofSecondOfDay(duration));
+
+                    consultation.getDoctor().addConsultationTimeslot(
+                            new ArrayList<>(Arrays.asList(consultationStartDateTime, consultationEndDateTime)));
+
+                    // doctor availability
+                    if (! isDoctorAvailable(consultation.getDoctor(), consultationStartDateTime, consultationEndDateTime)){
+                        Random random = new Random();
+                        int randomDoc = random.nextInt(doctorList.size());
+                        consultation.setDoctor(doctorList.get(randomDoc));
+                        System.out.println("new doctor "+ consultation.getDoctor());
+                    }
 
                     // checking new user
                     boolean isNewUser = true;
@@ -254,6 +322,7 @@ public class PatientDetailsFrame extends JFrame {
                         }
                     }
 
+                    // add data to patient obj
                     if (isNewUser){
                         Patient newPatient = new Patient(patientName,patientSurname,patientDOB,patientMobileNo,patientID);
                         consultation.setPatient(newPatient);
@@ -262,10 +331,14 @@ public class PatientDetailsFrame extends JFrame {
                         consultation.setPatient(oldPatient);
                         consultation.setCost(consultation.calculateTotalCost(oldPatient));
                     }
+                    consultation.setStartTime(consultationStartDateTime);
+                    consultation.setEndTime(consultationEndDateTime);
                     consultation.setNote(notes);
 
                     consultationList.add(consultation);
                     storeConsultationsData();
+
+                    // open new frame
                 }
             }
         }
