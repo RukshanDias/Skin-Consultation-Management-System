@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
-public class Person implements Serializable {
+public abstract class Person implements Serializable {
     private String name;
     private String surname;
     private LocalDate DOB;
@@ -48,6 +48,5 @@ public class Person implements Serializable {
     public void setMobileNo(String mobileNo) {
         this.mobileNo = mobileNo;
     }
-
 
 }
