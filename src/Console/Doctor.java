@@ -1,13 +1,15 @@
 package Console;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Doctor extends Person {
     private String medicalLicenseNo;
     private String specialisation;
-
-    private static HashSet<String> medicalLicenseNoSet = new HashSet<String>();
+    private ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = new ArrayList<>();
+    private static HashSet<String> medicalLicenseNoSet = new HashSet<>();
 
     public Doctor(String name, String surname, LocalDate DOB, String mobileNo, String medicalLicenseNo, String specialisation) {
         super(name, surname, DOB, mobileNo);
@@ -36,6 +38,13 @@ public class Doctor extends Person {
         return medicalLicenseNoSet;
     }
 
+    public ArrayList<ArrayList<LocalDateTime>> getConsultationTimeslots() {
+        return consultationTimeslots;
+    }
+
+    public void addConsultationTimeslot(ArrayList<LocalDateTime> timeslot){
+        this.consultationTimeslots.add(timeslot);
+    }
     @Override
     public String toString() {
         return "Name: " + this.getName() + "\t\t" +
