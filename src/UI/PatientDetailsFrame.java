@@ -25,13 +25,13 @@ import java.util.Random;
 public class PatientDetailsFrame extends JFrame {
     WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
     LinkedList<Doctor> doctorList= WSCM.getDoctorsList();
-    private Consultation consultation;
+    private static Consultation consultation;
     private static ArrayList<Patient> patientList = new ArrayList<>();
     private static ArrayList<Consultation> consultationList = new ArrayList<>();
     private JLabel hoursLabel, addFileStatus;
     private JTextArea notesText;
     private JSlider hourSlider;
-    private JButton addFileBtn, placeAppointmentBtn, backBtn;
+    private JButton addFileBtn, placeAppointmentBtn, cancelBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText, startTimeText;
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
@@ -39,12 +39,15 @@ public class PatientDetailsFrame extends JFrame {
     public PatientDetailsFrame(){}
     public PatientDetailsFrame(Consultation consultation) {
         // passing consultation to attribute
-        this.consultation = consultation;
+        PatientDetailsFrame.consultation = consultation;
 
         // register event handler
         ChangeHandler changeHandle = new ChangeHandler();
         ButtonHandler btnHandle = new ButtonHandler();
         KeyHandler keyHandle = new KeyHandler();
+
+        // load consultation data
+        loadConsultationsData();
 
         Container c = getContentPane();
         c.setLayout(null);
@@ -56,15 +59,15 @@ public class PatientDetailsFrame extends JFrame {
         title.setLocation(300, 30);
         c.add(title);
 
-        // Back button
-        backBtn = new JButton();
-        backBtn.setText("Back to main menu");
-        backBtn.setBounds(75,50,350,40);
-        backBtn.setHorizontalAlignment(SwingConstants.LEFT);
-        backBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/backIcon.png")));
-        backBtn.setFocusable(false);
-        backBtn.addActionListener(btnHandle);
-        c.add(backBtn);
+        // Cancel button
+        cancelBtn = new JButton();
+        cancelBtn.setText("Cancel Consultation");
+        cancelBtn.setBounds(75,450,250,40);
+        cancelBtn.setHorizontalAlignment(SwingConstants.CENTER);
+        cancelBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/backIcon.png")));
+        cancelBtn.setFocusable(false);
+        cancelBtn.addActionListener(btnHandle);
+        c.add(cancelBtn);
 
         // add by patient ID
         JLabel addByPatientId = new JLabel("Enter Patient ID:");
@@ -112,8 +115,6 @@ public class PatientDetailsFrame extends JFrame {
         nameText = new JTextField();
         surnameText = new JTextField();
         dobDateText = new JTextField();
-        JTextField dobMonthText = new JTextField();
-        JTextField dobYearText = new JTextField();
         mobileNoText = new JTextField();
         patientIdText = new JTextField();
         consultationDateText = new JTextField();
@@ -186,6 +187,10 @@ public class PatientDetailsFrame extends JFrame {
         return consultationList;
     }
 
+    public static Consultation getConsultation() {
+        return consultation;
+    }
+
     public static void storeConsultationsData(){
         try {
             FileOutputStream fileOutputStream = new FileOutputStream("consultationsData.txt");
@@ -209,11 +214,17 @@ public class PatientDetailsFrame extends JFrame {
             while ((fileInputStream.available() > 0)){
                 Consultation consultationObj = (Consultation) objectInputStream.readObject();
 
-                if (!consultationList.contains(consultationObj)){
+                if (!consultationList.contains(consultationObj)){ // duplicate error
                     consultationList.add(consultationObj);
                 }
                 if (!patientList.contains(consultationObj.getPatient())){
                     patientList.add(consultationObj.getPatient());
+                }
+                for (Consultation con : consultationList){
+                    System.out.println(con.getPatient().getPatientId());
+                }
+                for (Patient p : patientList){
+                    System.out.println(p.toString());
                 }
             }
             System.out.println("File successfully loaded..");
@@ -243,13 +254,20 @@ public class PatientDetailsFrame extends JFrame {
         }
     }
     public boolean isDoctorAvailable (Doctor doctor, LocalDateTime startTime, LocalDateTime endTime){
-        boolean doctorAvailability = false;
+        boolean doctorAvailability = true;
         System.out.println("in doc available meth");
-        ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = doctor.getConsultationTimeslots();
-        for (ArrayList<LocalDateTime> timeslot : consultationTimeslots) {
-            if ((timeslot.get(0).isAfter(endTime))
-                    && (timeslot.get(1).isBefore(startTime))) {
-                doctorAvailability = true;
+//        ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = doctor.getConsultationTimeslots();
+        for (Consultation consultation: consultationList) {
+            if (consultation.getDoctor() == doctor) {
+                // does time overlap condition
+                if (consultation.getStartTime().isBefore(startTime) && consultation.getEndTime().isAfter(startTime) ||
+                        consultation.getStartTime().isBefore(endTime) && consultation.getEndTime().isAfter(endTime) ||
+                        consultation.getStartTime().isBefore(startTime) && consultation.getEndTime().isAfter(endTime) ||
+                        consultation.getStartTime().isAfter(startTime) && consultation.getEndTime().isBefore(endTime))
+                {
+                    doctorAvailability = false;
+                    break;
+                }
             }
         }
         return doctorAvailability;
@@ -274,9 +292,9 @@ public class PatientDetailsFrame extends JFrame {
                 }else {
                     addFileStatus.setText("No file selected");
                 }
-            } else if (e.getSource() == backBtn) {
+            } else if (e.getSource() == cancelBtn) {
                 PatientDetailsFrame.this.dispose();
-                new MainMenuFrame();
+                new ConsultationStatus(false, false);
             } else if (e.getSource() == placeAppointmentBtn) {
                 if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid)){
                     markEmptyInputs(textFieldList);
@@ -298,18 +316,27 @@ public class PatientDetailsFrame extends JFrame {
                     LocalDateTime consultationEndDateTime = consultationDate.atTime(endTime);
 
                     // add time data to consultation
-                    consultation.setDuration(LocalTime.ofSecondOfDay(duration));
+                    consultation.setDuration(duration);
 
                     consultation.getDoctor().addConsultationTimeslot(
                             new ArrayList<>(Arrays.asList(consultationStartDateTime, consultationEndDateTime)));
 
                     // doctor availability
+                    boolean isNewDoctor;
                     if (! isDoctorAvailable(consultation.getDoctor(), consultationStartDateTime, consultationEndDateTime)){
                         Random random = new Random();
-                        int randomDoc = random.nextInt(doctorList.size());
-                        consultation.setDoctor(doctorList.get(randomDoc));
-                        System.out.println("new doctor "+ consultation.getDoctor());
+                        while (true){
+                            int randomDoc = random.nextInt(doctorList.size());
+                            if (isDoctorAvailable(doctorList.get(randomDoc),consultationStartDateTime, consultationEndDateTime)){
+                                consultation.setDoctor(doctorList.get(randomDoc));
+                                isNewDoctor = true;
+                                break;
+                            }
+                        }
+                    }else {
+                        isNewDoctor = false;
                     }
+                    System.out.println("new doctor "+ consultation.getDoctor());
 
                     // checking new user
                     boolean isNewUser = true;
@@ -327,18 +354,27 @@ public class PatientDetailsFrame extends JFrame {
                         Patient newPatient = new Patient(patientName,patientSurname,patientDOB,patientMobileNo,patientID);
                         consultation.setPatient(newPatient);
                         consultation.setCost(consultation.calculateTotalCost(newPatient));
+                        newPatient.increaseConsultationCount();
+                        patientList.add(newPatient);
+                        System.out.println(newPatient);
                     }else {
                         consultation.setPatient(oldPatient);
                         consultation.setCost(consultation.calculateTotalCost(oldPatient));
+                        oldPatient.increaseConsultationCount();
+                        System.out.println(oldPatient);
                     }
+                    consultation.setDate(consultationDate);
                     consultation.setStartTime(consultationStartDateTime);
                     consultation.setEndTime(consultationEndDateTime);
                     consultation.setNote(notes);
 
+                    // store/add data
                     consultationList.add(consultation);
                     storeConsultationsData();
 
                     // open new frame
+                    PatientDetailsFrame.this.dispose();
+                    new ConsultationStatus(true, isNewDoctor);
                 }
             }
         }
