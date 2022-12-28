@@ -14,7 +14,7 @@ public class ConsultationStatus extends JFrame {
     private JButton mainMenuBtn;
     private JLabel redirectText;
     private java.util.Timer timer;
-    public ConsultationStatus(boolean isSuccessful){
+    public ConsultationStatus(boolean isSuccessful, boolean isNewDoctor){
         // JPanels
         JPanel details = new JPanel(new GridLayout(7,2,10,5));
         // register event listeners
@@ -34,8 +34,18 @@ public class ConsultationStatus extends JFrame {
             consultationStatus.setForeground(new Color(89, 156, 3));
             this.add(consultationStatus);
 
-            this.add(new JLabel("Details of your appointment"));
             Consultation consultation = PatientDetailsFrame.getConsultation();
+
+            // Doctor availability
+            if (isNewDoctor){
+                JLabel docStatus = new JLabel("<html><div style='text-align: center;'>" +
+                        "Since the Doctor you selected, having an appointment <br/> on the time " +
+                        "that you selected. You've assign to Dr." + consultation.getDoctor().getName());
+                docStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
+                docStatus.setForeground(new Color(209, 52, 84));
+                this.add(docStatus);
+            }
+            this.add(new JLabel("Details of your appointment"));
 
             details.add(new JLabel("Patient Name :"));
             details.add(new JLabel(consultation.getPatient().getName()));
