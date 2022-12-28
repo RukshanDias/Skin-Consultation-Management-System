@@ -1,13 +1,17 @@
 package Console;
 
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-public class Consultation {
+public class Consultation implements Serializable {
     private Doctor doctor;
     private Patient patient;
     private LocalDate date;
-    private LocalTime duration;
+    private long duration;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private double cost;
     private String note;
     private final static double normalCost = 25.00;
@@ -16,7 +20,7 @@ public class Consultation {
     public Consultation(){
 
     }
-    public Consultation(Doctor doctor, Patient patient, LocalDate date, LocalTime duration, double cost, String note) {
+    public Consultation(Doctor doctor, Patient patient, LocalDate date, long duration, double cost, String note) {
         this.doctor = doctor;
         this.patient = patient;
         this.date = date;
@@ -26,14 +30,45 @@ public class Consultation {
     }
 
     public double calculateTotalCost(Patient patient){
-        int durationHours = this.duration.getHour();
-        double totalCost = (patient.getConsultationCount() < 1) ? durationHours * firstConsulCost : durationHours * normalCost;
-        return totalCost;
+        int durationHours = (int) this.duration;
+        System.out.println("patient consul count in costcal ->"+patient.getConsultationCount());
+        return (patient.getConsultationCount() < 1) ? durationHours * firstConsulCost : durationHours * normalCost;
     }
 
-    public void setCost(double cost) {
-        this.cost = cost;
+   // Getters
+    public Doctor getDoctor() {
+        return doctor;
     }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    // Setters
 
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
@@ -43,12 +78,24 @@ public class Consultation {
         this.patient = patient;
     }
 
-    public Patient getPatient() {
-        return patient;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public void setDuration(LocalTime duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
     }
 
     public void setNote(String note) {
@@ -56,7 +103,6 @@ public class Consultation {
     }
 
     public double calculateCostPerHour(){
-        double costPerHour = (this.patient.getConsultationCount() < 1) ? firstConsulCost : normalCost;
-        return costPerHour;
+        return (this.patient.getConsultationCount() < 1) ? firstConsulCost : normalCost;
     }
 }
