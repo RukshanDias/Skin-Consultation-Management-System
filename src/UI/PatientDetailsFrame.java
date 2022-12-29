@@ -28,11 +28,11 @@ public class PatientDetailsFrame extends JFrame {
     private static Consultation consultation;
     private static ArrayList<Patient> patientList = new ArrayList<>();
     private static ArrayList<Consultation> consultationList = new ArrayList<>();
-    private JLabel hoursLabel, addFileStatus;
+    private JLabel addPatientStatus,hoursLabel, addFileStatus;
     private JTextArea notesText;
     private JSlider hourSlider;
     private JComboBox<String> startTimeHour, startTimeMinutes, searchPatientId;
-    private JButton addFileBtn, placeAppointmentBtn, cancelBtn;
+    private JButton addPatientBtn, addFileBtn, placeAppointmentBtn, cancelBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText;
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
@@ -78,18 +78,19 @@ public class PatientDetailsFrame extends JFrame {
         patientIdList.add(0,"");
         searchPatientId = new JComboBox<>(patientIdList.toArray(new String[0]));
         searchPatientId.setEditable(true);
-//        searchPatientId.insertItemAt(" ", 0);
         searchPatientId.getEditor().getEditorComponent().addKeyListener(keyHandle);
 
-        JButton addPatientBtn = new JButton("Add");
+        addPatientBtn = new JButton("Add");
+        addPatientBtn.setEnabled(false);
+        addPatientBtn.addActionListener(btnHandle);
 
-        searchPatientId.setLocation(100,100);
-        searchPatientId.setSize(190, 20);
-        addPatientBtn.setLocation(260,130);
-        addPatientBtn.setSize(60, 20);
+        addPatientStatus = new JLabel("Enter your Patient ID, If you already have register.");
+        addPatientStatus.setBounds(100,150,300,20);
+        searchPatientId.setBounds(100,100,190, 20);
+        addPatientBtn.setBounds(260,130,60, 20);
 
         c.add(searchPatientId);
-        c.add(searchPatientId);
+        c.add(addPatientStatus);
         this.add(addPatientBtn);
 
         // Divider
@@ -301,7 +302,29 @@ public class PatientDetailsFrame extends JFrame {
     private class ButtonHandler implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == addFileBtn){
+            if (e.getSource() == addPatientBtn){
+                System.out.println("add btn clicked -> ");
+                String patientId = (String) searchPatientId.getEditor().getItem();
+                System.out.println(patientList.size());
+
+                for (Patient patient: patientList){
+                    System.out.println(patient.getPatientId() +" - "+patientId);
+                    if (patient.getPatientId().equalsIgnoreCase(patientId)){
+                        System.out.println("found");
+                        nameText.setText(patient.getName());
+                        surnameText.setText(patient.getSurname());
+                        dobDateText.setText(patient.getDOB().toString());
+                        mobileNoText.setText(patient.getMobileNo());
+                        patientIdText.setText(patient.getPatientId());
+
+                        for (int i=0; i<textFieldList.length-1; i++){
+                            textFieldList[i].setEditable(false);
+                            textFieldList[i].setBorder(BorderFactory.createLineBorder(Color.green, 2));
+                        }
+                        break;
+                    }
+                }
+            } else if (e.getSource() == addFileBtn){
                 JFileChooser addFile = new JFileChooser(FileSystemView.getFileSystemView());
                 int r = addFile.showSaveDialog(null);
                 if (r == JFileChooser.APPROVE_OPTION ){
@@ -397,6 +420,7 @@ public class PatientDetailsFrame extends JFrame {
     private class KeyHandler extends KeyAdapter {
         @Override
         public void keyReleased(KeyEvent e) {
+            // search PatientById comboBox
             if (e.getSource() == searchPatientId.getEditor().getEditorComponent()){
                 String input = (String) searchPatientId.getEditor().getItem();
                 int inputLength = input.length();
@@ -408,6 +432,16 @@ public class PatientDetailsFrame extends JFrame {
                     if (input.equalsIgnoreCase(tempID)){
                         suggestedIdList.add(patient.getPatientId());
                     }
+                }
+                if ((suggestedIdList.size() == 1) && suggestedIdList.get(0).equalsIgnoreCase(input)){
+                    addPatientStatus.setText("Click 'Add' button & fill appointment details.");
+                    addPatientBtn.setEnabled(true);
+                } else if (suggestedIdList.size() > 1) {
+                    addPatientBtn.setEnabled(false);
+                    addPatientStatus.setText("Enter your Patient ID, If you already have register.");
+                }else {
+                    addPatientBtn.setEnabled(false);
+                    addPatientStatus.setText("ID not found. Pls fill patient & appointment details");
                 }
                 searchPatientId.removeAllItems();
                 for (String s : suggestedIdList) {
