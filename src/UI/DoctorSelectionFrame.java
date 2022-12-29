@@ -25,7 +25,7 @@ public class DoctorSelectionFrame extends JFrame {
 
         // Table
         Object[] colNames = {"Name", "Surname", "specialisation"};
-        Object data[][] = {};
+        Object[][] data = {};
 
         DefaultTableModel docTableModel = new DefaultTableModel(data,colNames);
         for (Doctor doctor: doctorList){
@@ -34,11 +34,11 @@ public class DoctorSelectionFrame extends JFrame {
 
         doctorTable.setAutoCreateRowSorter(true);
         doctorTable.setModel(docTableModel);
-        doctorTable.setBounds(0,40,200,300);
+        doctorTable.setBounds(0,40,200,100);
         doctorTable.setEnabled(false);
 
         JScrollPane scrollPane = new JScrollPane(doctorTable);
-
+        scrollPane.setPreferredSize(new Dimension(500, 100));
         // register event handler
         ButtonHandler buttonHandle = new ButtonHandler();
 
@@ -76,14 +76,14 @@ public class DoctorSelectionFrame extends JFrame {
         topPanel.add(title);
 
         this.add(topPanel, BorderLayout.NORTH);
-        this.add(doctorSelectPanel, BorderLayout.EAST);
         this.add(scrollPane);
+        this.add(doctorSelectPanel, BorderLayout.SOUTH);
 
         // setting view
         this.setTitle("View doctors' details");
         this.setSize(700,630);
         this.setVisible(true);
-        this.setLayout(null);
+        this.setLayout(new FlowLayout(FlowLayout.CENTER,100,20));
         this.setLocationRelativeTo(null);
         this.setResizable(false);
     }
