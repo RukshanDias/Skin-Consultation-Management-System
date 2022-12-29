@@ -18,21 +18,20 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class PatientDetailsFrame extends JFrame {
-    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
-    LinkedList<Doctor> doctorList= WSCM.getDoctorsList();
+    LinkedList<Doctor> doctorList= new WestminsterSkinConsultationManager().getDoctorsList();
     private static Consultation consultation;
     private static ArrayList<Patient> patientList = new ArrayList<>();
     private static ArrayList<Consultation> consultationList = new ArrayList<>();
     private JLabel hoursLabel, addFileStatus;
     private JTextArea notesText;
     private JSlider hourSlider;
+    private JComboBox<String> startTimeHour, startTimeMinutes;
     private JButton addFileBtn, placeAppointmentBtn, cancelBtn;
-    private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText, startTimeText;
+    private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText;
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
 
@@ -118,9 +117,8 @@ public class PatientDetailsFrame extends JFrame {
         mobileNoText = new JTextField();
         patientIdText = new JTextField();
         consultationDateText = new JTextField();
-        startTimeText = new JTextField();
 
-        textFieldList = new JTextField[]{nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText, startTimeText};
+        textFieldList = new JTextField[]{nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText};
 
         int textFiledX = 530;
         int textFiledY = 100;
@@ -134,6 +132,15 @@ public class PatientDetailsFrame extends JFrame {
         }
 
         // adding other components
+        // Start time combo Box
+        String[] hours = {"08", "09", "10", "11", "12", "13", "14", "15", "16", "17"};
+        String[] minutes = {"00", "15", "30", "45"};
+        startTimeHour = new JComboBox<>(hours);
+        startTimeHour.setBounds(530 ,340, 50,20);
+        c.add(startTimeHour);
+        startTimeMinutes = new JComboBox<>(minutes);
+        startTimeMinutes.setBounds(590 ,340, 50,20);
+        c.add(startTimeMinutes);
 
         // duration hourSlider
         hourSlider = new JSlider(1, 5, 1);
@@ -304,9 +311,9 @@ public class PatientDetailsFrame extends JFrame {
                     String patientSurname = surnameText.getText();
                     LocalDate patientDOB = LocalDate.parse(dobDateText.getText());
                     String patientMobileNo = mobileNoText.getText();
-                    String patientID = patientIdText.getText();
+                    String patientID = patientIdText.getText().trim();
                     LocalDate consultationDate = LocalDate.parse(consultationDateText.getText());
-                    LocalTime startTime = LocalTime.parse(startTimeText.getText());
+                    LocalTime startTime = LocalTime.parse(startTimeHour.getSelectedItem() +":"+startTimeMinutes.getSelectedItem());
                     String notes = notesText.getText();
                     long duration = hourSlider.getValue();
 
@@ -317,9 +324,6 @@ public class PatientDetailsFrame extends JFrame {
 
                     // add time data to consultation
                     consultation.setDuration(duration);
-
-                    consultation.getDoctor().addConsultationTimeslot(
-                            new ArrayList<>(Arrays.asList(consultationStartDateTime, consultationEndDateTime)));
 
                     // doctor availability
                     boolean isNewDoctor;
@@ -342,7 +346,7 @@ public class PatientDetailsFrame extends JFrame {
                     boolean isNewUser = true;
                     Patient oldPatient = null;
                     for (Patient patient: patientList){
-                        if (patient.getPatientId().equals(patientID)){
+                        if (patient.getPatientId().equalsIgnoreCase(patientID)){
                             isNewUser = false;
                             oldPatient = patient;
                             break;
@@ -368,7 +372,7 @@ public class PatientDetailsFrame extends JFrame {
                     consultation.setEndTime(consultationEndDateTime);
                     consultation.setNote(notes);
 
-                    // store/add data
+                    // store/add consultation data
                     consultationList.add(consultation);
                     storeConsultationsData();
 
