@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.metal.MetalComboBoxEditor;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class PatientDetailsFrame extends JFrame {
     LinkedList<Doctor> doctorList= new WestminsterSkinConsultationManager().getDoctorsList();
@@ -29,7 +31,7 @@ public class PatientDetailsFrame extends JFrame {
     private JLabel hoursLabel, addFileStatus;
     private JTextArea notesText;
     private JSlider hourSlider;
-    private JComboBox<String> startTimeHour, startTimeMinutes;
+    private JComboBox<String> startTimeHour, startTimeMinutes, searchPatientId;
     private JButton addFileBtn, placeAppointmentBtn, cancelBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText;
     private JTextField[] textFieldList;
@@ -70,18 +72,24 @@ public class PatientDetailsFrame extends JFrame {
 
         // add by patient ID
         JLabel addByPatientId = new JLabel("Enter Patient ID:");
-        JTextField addByPatientIdText = new JTextField();
+        ArrayList<String> patientIdList = patientList.stream()
+                .map(Patient::getPatientId)
+                .collect(Collectors.toCollection(ArrayList::new));
+        patientIdList.add(0,"");
+        searchPatientId = new JComboBox<>(patientIdList.toArray(new String[0]));
+        searchPatientId.setEditable(true);
+//        searchPatientId.insertItemAt(" ", 0);
+        searchPatientId.getEditor().getEditorComponent().addKeyListener(keyHandle);
+
         JButton addPatientBtn = new JButton("Add");
 
-        addByPatientId.setLocation(100,100);
-        addByPatientId.setSize(190, 20);
-        addByPatientIdText.setLocation(100,130);
-        addByPatientIdText.setSize(150, 20);
+        searchPatientId.setLocation(100,100);
+        searchPatientId.setSize(190, 20);
         addPatientBtn.setLocation(260,130);
         addPatientBtn.setSize(60, 20);
 
-        c.add(addByPatientId);
-        c.add(addByPatientIdText);
+        c.add(searchPatientId);
+        c.add(searchPatientId);
         this.add(addPatientBtn);
 
         // Divider
@@ -169,6 +177,8 @@ public class PatientDetailsFrame extends JFrame {
         addFileStatus = new JLabel("No file selected");
         addFileStatus.setBounds(740,465, 190,25);
         c.add(addFileStatus);
+
+        // File preview
 
         // Place appointment button
         placeAppointmentBtn = new JButton("Place Appointment");
@@ -387,7 +397,25 @@ public class PatientDetailsFrame extends JFrame {
     private class KeyHandler extends KeyAdapter {
         @Override
         public void keyReleased(KeyEvent e) {
-             if (e.getSource() == nameText) {
+            if (e.getSource() == searchPatientId.getEditor().getEditorComponent()){
+                String input = (String) searchPatientId.getEditor().getItem();
+                int inputLength = input.length();
+                searchPatientId.showPopup();
+
+                ArrayList<String> suggestedIdList = new ArrayList<>();
+                for (Patient patient: patientList){
+                    String tempID = patient.getPatientId().substring(0,inputLength);
+                    if (input.equalsIgnoreCase(tempID)){
+                        suggestedIdList.add(patient.getPatientId());
+                    }
+                }
+                searchPatientId.removeAllItems();
+                for (String s : suggestedIdList) {
+                    searchPatientId.addItem(s);
+                }
+                searchPatientId.getEditor().setItem(input);
+            }
+             else if (e.getSource() == nameText) {
                 isNameValid = inputValidation(nameText, "^[a-zA-Z]*$");
             } else if (e.getSource() == surnameText) {
                  isSurnameValid = inputValidation(surnameText, "^[a-zA-Z]*$");
