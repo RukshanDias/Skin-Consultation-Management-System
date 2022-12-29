@@ -1,6 +1,7 @@
 package Console;
 
 import UI.MainMenuFrame;
+import UI.PatientDetailsFrame;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -16,21 +17,9 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         Scanner input = new Scanner(System.in);
         WestminsterSkinConsultationManager westSkinConsultCenter = new WestminsterSkinConsultationManager();
 
-//        loadData(doctorsList);
-
-        //        testing
-//        LocalDate d = LocalDate.of(2020,01,19);
-//        Console.Doctor d1 = new Console.Doctor("shan","zips",d, "0332343122","233","ART");
-//        Console.Doctor d2 = new Console.Doctor("shan","alias",d, "0332343122","233","ART");
-//        Console.Doctor d3 = new Console.Doctor("shan","dias",d, "0332343122","233","ART");
-//        Console.Doctor d4 = new Console.Doctor("shan","bias",d, "0332343122","233","ART");
-//        Console.Doctor d5 = new Console.Doctor("shan","baas",d, "0332343122","233","ART");
-//
-//        doctorsList.add(d1);
-//        doctorsList.add(d2);
-//        doctorsList.add(d3);
-//        doctorsList.add(d4);
-//        doctorsList.add(d5);
+        // load data from text file to program
+        westSkinConsultCenter.loadData();
+        PatientDetailsFrame.loadConsultationsData();
 
         // main menu
         menuLoop:
@@ -65,6 +54,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                 }
                 case "99" -> {
                     System.out.println("Programme terminated...\nSee you again..");
+                    PatientDetailsFrame.storeConsultationsData();
                     break menuLoop;
                 }
                 default -> System.out.println("Invalid option!!...");
@@ -216,7 +206,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             for (Doctor doctor: doctorsList){
                 if (doctor.getMedicalLicenseNo().equals(medicalLicenceNo)){
                     doctorsList.remove(doctor);
-                    System.out.printf("Doctor %s %s have been removed..",doctor.getName(),doctor.getSurname());
+                    System.out.printf("Doctor %s %s have been removed..\nTotal number of Doctors: %d",doctor.getName(),doctor.getSurname(), doctorsList.size());
                     break;
                 }
             }

@@ -9,7 +9,6 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.metal.MetalComboBoxEditor;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
@@ -46,9 +45,6 @@ public class PatientDetailsFrame extends JFrame {
         ChangeHandler changeHandle = new ChangeHandler();
         ButtonHandler btnHandle = new ButtonHandler();
         KeyHandler keyHandle = new KeyHandler();
-
-        // load consultation data
-        loadConsultationsData();
 
         Container c = getContentPane();
         c.setLayout(null);
@@ -197,14 +193,6 @@ public class PatientDetailsFrame extends JFrame {
         this.setResizable(false);
     }
 
-    public ArrayList<Patient> getPatientList() {
-        return patientList;
-    }
-
-    public ArrayList<Consultation> getConsultationList() {
-        return consultationList;
-    }
-
     public static Consultation getConsultation() {
         return consultation;
     }
@@ -224,17 +212,18 @@ public class PatientDetailsFrame extends JFrame {
         }
     }
 
-    public void loadConsultationsData(){
+    public static void loadConsultationsData(){
         try {
             FileInputStream fileInputStream = new FileInputStream("consultationsData.txt");
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
             while ((fileInputStream.available() > 0)){
                 Consultation consultationObj = (Consultation) objectInputStream.readObject();
+                consultationList.add(consultationObj);
 
-                if (!consultationList.contains(consultationObj)){ // duplicate error
-                    consultationList.add(consultationObj);
-                }
+//                if (!consultationList.contains(consultationObj)){ // duplicate error
+//                    consultationList.add(consultationObj);
+//                }
                 if (!patientList.contains(consultationObj.getPatient())){
                     patientList.add(consultationObj.getPatient());
                 }
@@ -274,7 +263,6 @@ public class PatientDetailsFrame extends JFrame {
     public boolean isDoctorAvailable (Doctor doctor, LocalDateTime startTime, LocalDateTime endTime){
         boolean doctorAvailability = true;
         System.out.println("in doc available meth");
-//        ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = doctor.getConsultationTimeslots();
         for (Consultation consultation: consultationList) {
             if (consultation.getDoctor() == doctor) {
                 // does time overlap condition
@@ -321,6 +309,11 @@ public class PatientDetailsFrame extends JFrame {
                             textFieldList[i].setEditable(false);
                             textFieldList[i].setBorder(BorderFactory.createLineBorder(Color.green, 2));
                         }
+                        isNameValid = true;
+                        isSurnameValid = true;
+                        isDobValid = true;
+                        isMobileNoValid = true;
+                        isPatientIdValid = true;
                         break;
                     }
                 }
@@ -407,7 +400,7 @@ public class PatientDetailsFrame extends JFrame {
 
                     // store/add consultation data
                     consultationList.add(consultation);
-                    storeConsultationsData();
+//                    storeConsultationsData();
 
                     // open new frame
                     PatientDetailsFrame.this.dispose();
