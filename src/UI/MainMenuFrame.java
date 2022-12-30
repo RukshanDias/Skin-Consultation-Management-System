@@ -10,8 +10,6 @@ public class MainMenuFrame extends JFrame {
     WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
     private JButton displayDoctorsBtn = new JButton("<html><div style='border-radius:50%;'>");
     private JButton addConsultationBtn = new JButton();
-    private JButton viewHistoryBtn = new JButton();
-    private Font titleFont = new Font(Font.MONOSPACED, Font.BOLD, 15);
     private Color mainBgColor = new Color(240, 208, 144);
 
 
@@ -37,6 +35,7 @@ public class MainMenuFrame extends JFrame {
         // welcome msg
         JLabel welcomeMsg = new JLabel("<html><div style='text-align: center;'>Welcome to<br/> Westminster skin consultation center !!");
         welcomeMsg.setHorizontalTextPosition(JLabel.CENTER);
+        Font titleFont = new Font(Font.MONOSPACED, Font.BOLD, 15);
         welcomeMsg.setFont(titleFont);
 
         msgPanel.add(welcomeMsg);
@@ -49,7 +48,7 @@ public class MainMenuFrame extends JFrame {
         this.addWindowListener(windowHandle);
 
         // Menu options
-        optionsPanel.setLayout(new GridLayout(3,1,20,25));
+        optionsPanel.setLayout(new GridLayout(3,1,20,35));
 
         displayDoctorsBtn.setText("View Doctor List");
         displayDoctorsBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/doctor1.png")));
@@ -61,15 +60,9 @@ public class MainMenuFrame extends JFrame {
         addConsultationBtn.setFocusable(false);
         addConsultationBtn.addActionListener(btnHandle);
 
-        viewHistoryBtn.setText("View appointment History");
-        viewHistoryBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/history.png")));
-        viewHistoryBtn.setFocusable(false);
-        viewHistoryBtn.addActionListener(btnHandle);
-
         // Adding elements to panels and frame
         optionsPanel.add(displayDoctorsBtn);
         optionsPanel.add(addConsultationBtn);
-        optionsPanel.add(viewHistoryBtn);
         optionsPanel.setBackground(mainBgColor);
 
         mainContainer.add(imgPanel, BorderLayout.NORTH);
@@ -92,11 +85,11 @@ public class MainMenuFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == displayDoctorsBtn){
-                MainMenuFrame.this.setVisible(false);
+                MainMenuFrame.this.dispose();
                 new DoctorListFrame();
             } else if (e.getSource() == addConsultationBtn) {
                 MainMenuFrame.this.dispose();
-                new ConsultationFrame();
+                new DoctorSelectionFrame();
             }
         }
     }
@@ -104,6 +97,7 @@ public class MainMenuFrame extends JFrame {
     private class WindowHandler extends WindowAdapter {
         @Override
         public void windowClosing(WindowEvent e) {
+            MainMenuFrame.this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             int confirmed = JOptionPane.showConfirmDialog(null,
                     "Are you sure you want to exit the program?", "Exit Program Message Box",
                     JOptionPane.YES_NO_OPTION);
