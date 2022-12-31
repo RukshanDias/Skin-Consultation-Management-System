@@ -5,6 +5,7 @@ import Console.Patient;
 import Console.WestminsterSkinConsultationManager;
 import Console.Doctor;
 
+import javax.crypto.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -13,11 +14,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 public class PatientDetailsFrame extends JFrame {
     LinkedList<Doctor> doctorList= new WestminsterSkinConsultationManager().getDoctorsList();
     private static Consultation consultation;
+    private static Encryptor encryptor = new Encryptor();
     private static ArrayList<Patient> patientList = new ArrayList<>();
     private static ArrayList<Consultation> consultationList = new ArrayList<>();
     private JLabel addPatientStatus,hoursLabel, addFileStatus;
@@ -34,7 +39,7 @@ public class PatientDetailsFrame extends JFrame {
     private JButton addPatientBtn, addFileBtn, placeAppointmentBtn, cancelBtn;
     private JTextField nameText, surnameText, dobDateText, mobileNoText, patientIdText, consultationDateText;
     private JTextField[] textFieldList;
-    private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid = false;
+    private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid, isConsulDateValid = false;
 
     public PatientDetailsFrame(){}
     public PatientDetailsFrame(Consultation consultation) {
@@ -59,9 +64,9 @@ public class PatientDetailsFrame extends JFrame {
         // Cancel button
         cancelBtn = new JButton();
         cancelBtn.setText("Cancel Consultation");
-        cancelBtn.setBounds(75,450,250,40);
+        cancelBtn.setBounds(85,650,250,40);
         cancelBtn.setHorizontalAlignment(SwingConstants.CENTER);
-        cancelBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/backIcon.png")));
+        cancelBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/cancel.png")));
         cancelBtn.setFocusable(false);
         cancelBtn.addActionListener(btnHandle);
         c.add(cancelBtn);
@@ -179,8 +184,9 @@ public class PatientDetailsFrame extends JFrame {
 
         // Place appointment button
         placeAppointmentBtn = new JButton("Place Appointment");
-        placeAppointmentBtn.setBounds(240,635, 240,50);
-        placeAppointmentBtn.setFont(new Font("Arial", Font.PLAIN, 25));
+        placeAppointmentBtn.setBounds(440,645, 240,50);
+        placeAppointmentBtn.setFont(new Font("Arial", Font.PLAIN, 17));
+        placeAppointmentBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/add.png")));
         placeAppointmentBtn.addActionListener(btnHandle);
         c.add(placeAppointmentBtn);
 
@@ -189,12 +195,22 @@ public class PatientDetailsFrame extends JFrame {
         this.setSize(900,800);
         this.setVisible(true);
         this.setLayout(null);
+        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
     }
-
+    public static ArrayList<Patient> getPatientList() {
+        return patientList;
+    }
+    public static ArrayList<Consultation> getConsultationList() {
+        return consultationList;
+    }
     public static Consultation getConsultation() {
         return consultation;
+    }
+
+    public static Encryptor getEncryptor() {
+        return encryptor;
     }
 
     public static void storeConsultationsData(){
@@ -234,7 +250,7 @@ public class PatientDetailsFrame extends JFrame {
                     System.out.println(p.toString());
                 }
             }
-            System.out.println("File successfully loaded..");
+            System.out.println("Consultation data successfully loaded..");
         }catch (IOException e){
             System.out.println("an error occurred when loading data "+ e);
         } catch (ClassNotFoundException e) {
@@ -322,6 +338,14 @@ public class PatientDetailsFrame extends JFrame {
                 int r = addFile.showSaveDialog(null);
                 if (r == JFileChooser.APPROVE_OPTION ){
                     addFileStatus.setText("Selected: " + addFile.getSelectedFile().getName());
+
+                    // encrypt image path & store
+                    String imagePath = addFile.getSelectedFile().toString();
+                    String encryptedImgPath = encryptor.encryptData(imagePath);
+                    consultation.setImage(encryptedImgPath);
+                    System.out.println(imagePath);
+                    System.out.println(encryptedImgPath);
+
                 }else {
                     addFileStatus.setText("No file selected");
                 }
@@ -329,7 +353,7 @@ public class PatientDetailsFrame extends JFrame {
                 PatientDetailsFrame.this.dispose();
                 new ConsultationStatus(false, false);
             } else if (e.getSource() == placeAppointmentBtn) {
-                if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid)){
+                if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid && isConsulDateValid)){
                     markEmptyInputs(textFieldList);
                     JOptionPane.showMessageDialog(placeAppointmentBtn, "Invalid or Empty input.\nThose have marked in red.","ERROR", JOptionPane.ERROR_MESSAGE);
                 }else {
@@ -393,10 +417,16 @@ public class PatientDetailsFrame extends JFrame {
                         oldPatient.increaseConsultationCount();
                         System.out.println(oldPatient);
                     }
+
+                    // encrypt data
+                    String encryptedNote = encryptor.encryptData(notes);
+                    String decryptedNote = encryptor.decryptData(encryptedNote);
+
+                    // add data to class
                     consultation.setDate(consultationDate);
                     consultation.setStartTime(consultationStartDateTime);
                     consultation.setEndTime(consultationEndDateTime);
-                    consultation.setNote(notes);
+                    consultation.setNote(encryptedNote);
 
                     // store/add consultation data
                     consultationList.add(consultation);
@@ -464,7 +494,21 @@ public class PatientDetailsFrame extends JFrame {
                  isMobileNoValid = inputValidation(mobileNoText, "^[0-9]{10}$");
              } else if (e.getSource() == patientIdText) {
                  isPatientIdValid = inputValidation(patientIdText, "^[a-zA-Z0-9]+$");
-             }
+             } else if (e.getSource() == consultationDateText) {
+                try {
+                    LocalDate consulDate = LocalDate.parse(consultationDateText.getText());
+                    if(consulDate.isAfter(LocalDate.now())){
+                        consultationDateText.setBorder(BorderFactory.createLineBorder(Color.green, 2));
+                        isConsulDateValid = true;
+                    }else {
+                        consultationDateText.setBorder(BorderFactory.createLineBorder(Color.red, 3));
+                        isConsulDateValid = false;
+                    }
+                }catch (DateTimeParseException d){
+                    consultationDateText.setBorder(BorderFactory.createLineBorder(Color.red,3));
+                    isConsulDateValid = false;
+                }
+            }
         }
     }
 }
