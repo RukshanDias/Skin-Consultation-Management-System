@@ -1,10 +1,10 @@
 package UI;
 
+import Console.Consultation;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,79 +12,81 @@ import java.util.Arrays;
 import java.util.Base64;
 
 public class Encryptor {
-    private String secret = "ddsdasda";
-    private SecretKey key1;
     private static SecretKeySpec secretKey;
-    private static byte[] key;
 
-    public void setKey(final String myKey) {
-        MessageDigest sha = null;
+    public Encryptor(Consultation consultation) {
+        String key = generateKey();
+        setKey(key, consultation);
+    }
+    public static void setKey(final String myKey, Consultation consultation) {
+        MessageDigest sha;
         try {
-            key = myKey.getBytes(StandardCharsets.UTF_8);
+            byte[] key = myKey.getBytes(StandardCharsets.UTF_8);
             sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
             key = Arrays.copyOf(key, 16);
             secretKey = new SecretKeySpec(key, "AES");
+            consultation.setSecretKey(secretKey);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
-    public String encryptData(String data){
+
+    /**
+     * This method is used to encrypt data
+     * @param data - String data that want to encrypt
+     * @return encrypted String message
+     */
+    public static String encryptData(String data){
         String encryptedMsg = "";
-        generateKey();
         try {
-            setKey(secret);
-//            generateKey();
-            byte[] message = convertToBytes(data);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
             encryptedMsg = Base64.getEncoder()
                     .encodeToString(cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)));
 
-//            byte[] messageInBytes = cipher.doFinal(message);
-//            encryptedMsg = convertToString(messageInBytes);
-            System.out.println("encrypt -> "+encryptedMsg);
         }catch (Exception e){
             System.out.println("Error occur when encrypting data "+e);
         }
         return encryptedMsg;
     }
 
-    public String decryptData(String encryptedMessage) {
+    /***
+     * This method is used to decrypt encrypted message
+     * @param encryptedMessage - encrypted message
+     * @param key - key that used to encrypt
+     * @return decrypted String message
+     */
+    public static String decryptData(String encryptedMessage, SecretKeySpec key) {
         String decryptedMsg = "";
         try {
-            setKey(secret);
-//            byte[] encryptMsg = convertToBytes(encryptedMessage);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            cipher.init(Cipher.DECRYPT_MODE, key);
 
             decryptedMsg = new String(cipher.doFinal(Base64.getDecoder()
                     .decode(encryptedMessage)));
-//            byte[] messageInBytes = cipher.doFinal(encryptMsg);
-//            decryptedMsg = convertToString(messageInBytes);
-            System.out.println("decrypt -> "+decryptedMsg);
+            System.out.println(decryptedMsg);
         } catch (Exception e){
             System.out.println("Error occur when decrypting data "+e);
         }
         return decryptedMsg;
     }
 
-    private void generateKey(){
+    /***
+     * This method is used to generate a secret key
+     * @return secret key in String format
+     */
+    private static String generateKey(){
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
             keyGenerator.init(128);
-            this.secret = keyGenerator.generateKey().toString();
-            System.out.println("secretkey -> "+this.secret);
+            return keyGenerator.generateKey().toString();
+
         }catch (Exception e){
             System.out.println("Error occur when generating key");
         }
-    }
-    private String convertToString(byte[] data) {
-        return new String(data);
+        return null;
     }
 
-    private byte[] convertToBytes(String data) {
-        return data.getBytes();
-    }
 }
