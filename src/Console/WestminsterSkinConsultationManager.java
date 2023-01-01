@@ -57,36 +57,10 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     PatientDetailsFrame.storeConsultationsData();
                     break menuLoop;
                 }
-                default -> System.out.println("Invalid option!!...");
+                default -> System.out.println("Invalid option!!...Pls try again..");
             }
 
         }
-    }
-
-    /**
-     * This method is used to validate integer inputs.
-     * @param message   text that display before getting input
-     * @param input     Scanner object
-     * @param maxNo     maximum integer value that can have
-     * @return  Fully validated int value
-     */
-    private static int intValidation(String message, Scanner input, int maxNo){
-        int userInput;
-        while (true){
-            System.out.print(message);
-            try {
-                userInput = input.nextInt();
-                if (userInput >= 1 && userInput <= maxNo) {
-                    break;
-                }else {
-                    System.out.println("Out of range!! Pls enter number between 1 and "+maxNo);
-                }
-            }catch (InputMismatchException e){
-                System.out.println("Pls enter number not letters.");
-            }
-            input.nextLine();
-        }
-        return userInput;
     }
 
     /**
@@ -107,7 +81,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                 condition = "^[a-zA-Z]*$";
             }
             case "mobileNo" -> {
-                errorMessage = "Pls enter 10 numbers only";
+                errorMessage = "Invalid mobile no..Pls enter 10 numbers only";
                 condition = "^[0-9]{10}$";
             }
             case "Id" -> {
@@ -128,11 +102,16 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         return userInput;
     }
 
+    /***
+     * This method is used to validate Date of birth input
+     * @param input - Scanner input
+     * @return valid LocalDate value
+     */
     private static LocalDate dateValidation(Scanner input){
         LocalDate DOB;
         while (true){
             try {
-                System.out.print("Enter a date [yyyy-mm-dd]: ");
+                System.out.print("Enter date of birth [yyyy-mm-dd]: ");
                 String str = input.next();
                 DOB = LocalDate.parse(str);
                 if(DOB.isBefore(LocalDate.now())){
@@ -147,10 +126,15 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
         return DOB;
     }
 
-    private static String IdValidation(String message ,Scanner input){
+    /**
+     * This method is used to validate medical number.
+     * @param input - Scanner object
+     * @return valid & unique medical licence number
+     */
+    private static String IdValidation(Scanner input){
         String userInput;
         while (true){
-            System.out.print(message);
+            System.out.print("Enter Doctor's medical licence number: ");
             userInput = input.next();
             if (userInput.matches("^[a-zA-Z0-9]+$") && (!Doctor.getMedicalLicenseNoSet().contains(userInput))){
                 break;
@@ -176,7 +160,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             LocalDate DOB = dateValidation(input);
 
             String mobileNo = stringValidation("Enter Doctor's mobile number: ",input, "mobileNo");
-            String medicalLicenceNo = IdValidation("Enter Doctor's medical licence number: ",input);
+            String medicalLicenceNo = IdValidation(input);
             String specialisation = stringValidation("Enter Doctor's specialisation: ",input, "text");
 
             doctorsList.add(new Doctor(name,surname,DOB,mobileNo,medicalLicenceNo,specialisation));
@@ -200,9 +184,12 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             do {
                 System.out.print("Enter Doctor's medical licence number: ");
                 medicalLicenceNo = input.next();
+                if (!Doctor.getMedicalLicenseNoSet().contains(medicalLicenceNo)){
+                    System.out.println("Invalid medical licence number.. Try again..");
+                }
             }while (!Doctor.getMedicalLicenseNoSet().contains(medicalLicenceNo));
 
-            // searching algo
+            // searching algorithm
             for (Doctor doctor: doctorsList){
                 if (doctor.getMedicalLicenseNo().equals(medicalLicenceNo)){
                     doctorsList.remove(doctor);

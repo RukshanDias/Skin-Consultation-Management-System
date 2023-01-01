@@ -8,7 +8,6 @@ import java.util.HashSet;
 public class Doctor extends Person {
     private String medicalLicenseNo;
     private String specialisation;
-    private ArrayList <ArrayList<LocalDateTime>> consultationTimeslots = new ArrayList<>();
     private static HashSet<String> medicalLicenseNoSet = new HashSet<>();
 
     public Doctor(String name, String surname, LocalDate DOB, String mobileNo, String medicalLicenseNo, String specialisation) {
@@ -18,33 +17,32 @@ public class Doctor extends Person {
         medicalLicenseNoSet.add(medicalLicenseNo);
     }
 
+    // Getters
     public String getMedicalLicenseNo() {
         return medicalLicenseNo;
-    }
-
-    public void setMedicalLicenseNo(String medicalLicenseNo) {
-        this.medicalLicenseNo = medicalLicenseNo;
     }
 
     public String getSpecialisation() {
         return specialisation;
     }
 
-    public void setSpecialisation(String specialisation) {
-        this.specialisation = specialisation;
-    }
-
     public static HashSet<String> getMedicalLicenseNoSet() {
         return medicalLicenseNoSet;
     }
 
-    public ArrayList<ArrayList<LocalDateTime>> getConsultationTimeslots() {
-        return consultationTimeslots;
+    // Setters
+    public void setMedicalLicenseNo(String medicalLicenseNo) {
+        this.medicalLicenseNo = medicalLicenseNo;
     }
 
-    public void addConsultationTimeslot(ArrayList<LocalDateTime> timeslot){
-        this.consultationTimeslots.add(timeslot);
+    public void setSpecialisation(String specialisation) {
+        this.specialisation = specialisation;
     }
+
+    public static void setMedicalLicenseNoSet(HashSet<String> medicalLicenseNoSet) {
+        Doctor.medicalLicenseNoSet = medicalLicenseNoSet;
+    }
+
     @Override
     public String toString() {
         return "Name: " + this.getName() + "\t\t" +

@@ -1,9 +1,9 @@
 package Console;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public class Consultation implements Serializable {
     private Doctor doctor;
@@ -14,6 +14,8 @@ public class Consultation implements Serializable {
     private LocalDateTime endTime;
     private double cost;
     private String note;
+    private String image;
+    private SecretKeySpec secretKey;
     private final static double normalCost = 25.00;
     private final static double firstConsulCost = 15.00;
 
@@ -68,6 +70,14 @@ public class Consultation implements Serializable {
         return note;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public SecretKeySpec getSecretKey() {
+        return secretKey;
+    }
+
     // Setters
 
     public void setDoctor(Doctor doctor) {
@@ -102,7 +112,11 @@ public class Consultation implements Serializable {
         this.note = note;
     }
 
-    public double calculateCostPerHour(){
-        return (this.patient.getConsultationCount() < 1) ? firstConsulCost : normalCost;
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setSecretKey(SecretKeySpec secretKey) {
+        this.secretKey = secretKey;
     }
 }

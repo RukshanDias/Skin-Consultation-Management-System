@@ -17,36 +17,31 @@ public abstract class Person implements Serializable {
         this.mobileNo = mobileNo;
     }
 
+    // getters
     public String getName() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getSurname() {
         return surname;
     }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
-
     public LocalDate getDOB() {
         return DOB;
     }
-
-    public void setDOB(LocalDate DOB) {
-        this.DOB = DOB;
-    }
-
     public String getMobileNo() {
         return mobileNo;
     }
 
+    // setters
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+    public void setDOB(LocalDate DOB) {
+        this.DOB = DOB;
+    }
     public void setMobileNo(String mobileNo) {
         this.mobileNo = mobileNo;
     }
-
 }
