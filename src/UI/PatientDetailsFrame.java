@@ -5,7 +5,6 @@ import Console.Patient;
 import Console.WestminsterSkinConsultationManager;
 import Console.Doctor;
 
-import javax.crypto.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -14,14 +13,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.io.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -82,13 +78,13 @@ public class PatientDetailsFrame extends JFrame {
         searchPatientId.getEditor().getEditorComponent().addKeyListener(keyHandle);
 
         addPatientBtn = new JButton("Add");
-        addPatientBtn.setEnabled(false);
+//        addPatientBtn.setEnabled(false);
         addPatientBtn.addActionListener(btnHandle);
 
         addPatientStatus = new JLabel("Enter your Patient ID, If you already have register.");
         addPatientStatus.setBounds(100,150,300,20);
         searchPatientId.setBounds(100,100,190, 20);
-        addPatientBtn.setBounds(260,130,60, 20);
+        addPatientBtn.setBounds(300,100,60, 20);
 
         c.add(searchPatientId);
         c.add(addPatientStatus);
@@ -307,14 +303,12 @@ public class PatientDetailsFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == addPatientBtn){
-                System.out.println("add btn clicked -> ");
-                String patientId = (String) searchPatientId.getEditor().getItem();
-                System.out.println(patientList.size());
+                String selectedPatientId = (String) searchPatientId.getEditor().getItem();
 
+                // finding whether similar ID found
                 for (Patient patient: patientList){
-                    System.out.println(patient.getPatientId() +" - "+patientId);
-                    if (patient.getPatientId().equalsIgnoreCase(patientId)){
-                        System.out.println("found");
+                    if (patient.getPatientId().equalsIgnoreCase(selectedPatientId)){
+                        // add details to text filed
                         nameText.setText(patient.getName());
                         surnameText.setText(patient.getSurname());
                         dobDateText.setText(patient.getDOB().toString());
@@ -325,14 +319,18 @@ public class PatientDetailsFrame extends JFrame {
                             textFieldList[i].setEditable(false);
                             textFieldList[i].setBorder(BorderFactory.createLineBorder(Color.green, 2));
                         }
+                        addPatientStatus.setText("Patient "+ selectedPatientId +" details has been added");
                         isNameValid = true;
                         isSurnameValid = true;
                         isDobValid = true;
                         isMobileNoValid = true;
                         isPatientIdValid = true;
                         break;
+                    }else {
+                        addPatientStatus.setText("No patients found under "+ selectedPatientId +" ID");
                     }
                 }
+
             } else if (e.getSource() == addFileBtn){
                 JFileChooser addFile = new JFileChooser(FileSystemView.getFileSystemView());
                 int r = addFile.showSaveDialog(null);
@@ -343,20 +341,20 @@ public class PatientDetailsFrame extends JFrame {
                     String imagePath = addFile.getSelectedFile().toString();
                     String encryptedImgPath = encryptor.encryptData(imagePath);
                     consultation.setImage(encryptedImgPath);
-                    System.out.println(imagePath);
-                    System.out.println(encryptedImgPath);
-
                 }else {
                     addFileStatus.setText("No file selected");
                 }
+
             } else if (e.getSource() == cancelBtn) {
                 PatientDetailsFrame.this.dispose();
                 new ConsultationStatus(false, false);
+
             } else if (e.getSource() == placeAppointmentBtn) {
                 if (!(isNameValid && isSurnameValid && isDobValid && isMobileNoValid && isPatientIdValid && isConsulDateValid)){
                     markEmptyInputs(textFieldList);
                     JOptionPane.showMessageDialog(placeAppointmentBtn, "Invalid or Empty input.\nThose have marked in red.","ERROR", JOptionPane.ERROR_MESSAGE);
                 }else {
+                    // get entered details
                     String patientName = nameText.getText();
                     String patientSurname = surnameText.getText();
                     LocalDate patientDOB = LocalDate.parse(dobDateText.getText());
@@ -390,7 +388,6 @@ public class PatientDetailsFrame extends JFrame {
                     }else {
                         isNewDoctor = false;
                     }
-                    System.out.println("new doctor "+ consultation.getDoctor());
 
                     // checking new user
                     boolean isNewUser = true;
@@ -410,17 +407,14 @@ public class PatientDetailsFrame extends JFrame {
                         consultation.setCost(consultation.calculateTotalCost(newPatient));
                         newPatient.increaseConsultationCount();
                         patientList.add(newPatient);
-                        System.out.println(newPatient);
                     }else {
                         consultation.setPatient(oldPatient);
                         consultation.setCost(consultation.calculateTotalCost(oldPatient));
                         oldPatient.increaseConsultationCount();
-                        System.out.println(oldPatient);
                     }
 
-                    // encrypt data
+                    // encrypt note
                     String encryptedNote = encryptor.encryptData(notes);
-                    String decryptedNote = encryptor.decryptData(encryptedNote);
 
                     // add data to class
                     consultation.setDate(consultationDate);
@@ -430,7 +424,6 @@ public class PatientDetailsFrame extends JFrame {
 
                     // store/add consultation data
                     consultationList.add(consultation);
-//                    storeConsultationsData();
 
                     // open new frame
                     PatientDetailsFrame.this.dispose();
@@ -449,6 +442,7 @@ public class PatientDetailsFrame extends JFrame {
                 int inputLength = input.length();
                 searchPatientId.showPopup();
 
+                // finding matching IDs
                 ArrayList<String> suggestedIdList = new ArrayList<>();
                 for (Patient patient: patientList){
                     String tempID = patient.getPatientId().substring(0,inputLength);
@@ -456,17 +450,9 @@ public class PatientDetailsFrame extends JFrame {
                         suggestedIdList.add(patient.getPatientId());
                     }
                 }
-                if ((suggestedIdList.size() == 1) && suggestedIdList.get(0).equalsIgnoreCase(input)){
-                    addPatientStatus.setText("Click 'Add' button & fill appointment details.");
-                    addPatientBtn.setEnabled(true);
-                } else if (suggestedIdList.size() > 1) {
-                    addPatientBtn.setEnabled(false);
-                    addPatientStatus.setText("Enter your Patient ID, If you already have register.");
-                }else {
-                    addPatientBtn.setEnabled(false);
-                    addPatientStatus.setText("ID not found. Pls fill patient & appointment details");
-                }
+
                 searchPatientId.removeAllItems();
+                // displaying updated suggestions
                 for (String s : suggestedIdList) {
                     searchPatientId.addItem(s);
                 }
