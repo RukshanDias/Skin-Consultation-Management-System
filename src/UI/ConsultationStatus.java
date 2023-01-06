@@ -14,9 +14,10 @@ public class ConsultationStatus extends JFrame {
     private JButton mainMenuBtn;
     private JLabel redirectText;
     private java.util.Timer timer;
+
     public ConsultationStatus(boolean isSuccessful, boolean isNewDoctor){
         // JPanels
-        JPanel details = new JPanel(new GridLayout(7,2,10,5));
+        JPanel details = new JPanel(new GridLayout(8,2,10,5));
         // register event listeners
         ButtonHandler btnHandle = new ButtonHandler();
 
@@ -47,6 +48,7 @@ public class ConsultationStatus extends JFrame {
             }
             this.add(new JLabel("Details of your appointment"));
 
+            // Displaying patient details
             details.add(new JLabel("Patient Name :"));
             details.add(new JLabel(consultation.getPatient().getName()));
             details.add(new JLabel("Doctor Name : "));
@@ -61,12 +63,12 @@ public class ConsultationStatus extends JFrame {
             details.add(new JLabel(String.valueOf(consultation.getDuration())));
             details.add(new JLabel("Cost :"));
             details.add(new JLabel(String.valueOf(consultation.getCost())));
-
+            details.add(new JLabel("Note :"));
+            details.add(new JLabel(Encryptor.decryptData(consultation.getNote(), consultation.getSecretKey())));
         }else {
             consultationStatus.setText("Your consultation has been canceled..");
             consultationStatus.setForeground(Color.red);
             this.add(consultationStatus);
-
         }
 
         // Back to main menu Btn

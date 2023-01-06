@@ -8,6 +8,7 @@ import Console.Doctor;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
@@ -19,13 +20,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 public class PatientDetailsFrame extends JFrame {
     LinkedList<Doctor> doctorList= new WestminsterSkinConsultationManager().getDoctorsList();
     private static Consultation consultation;
-    private static Encryptor encryptor = new Encryptor();
     private static ArrayList<Patient> patientList = new ArrayList<>();
     private static ArrayList<Consultation> consultationList = new ArrayList<>();
     private JLabel addPatientStatus,hoursLabel, addFileStatus;
@@ -37,10 +38,10 @@ public class PatientDetailsFrame extends JFrame {
     private JTextField[] textFieldList;
     private boolean isNameValid, isSurnameValid, isDobValid, isMobileNoValid, isPatientIdValid, isConsulDateValid = false;
 
-    public PatientDetailsFrame(){}
     public PatientDetailsFrame(Consultation consultation) {
         // passing consultation to attribute
         PatientDetailsFrame.consultation = consultation;
+        Encryptor encryptor = new Encryptor(consultation);
 
         // register event handler
         ChangeHandler changeHandle = new ChangeHandler();
@@ -54,7 +55,7 @@ public class PatientDetailsFrame extends JFrame {
         JLabel title = new JLabel("Add patient details");
         title.setFont(new Font("Arial", Font.PLAIN, 30));
         title.setSize(300, 30);
-        title.setLocation(300, 30);
+        title.setLocation(320, 30);
         c.add(title);
 
         // Cancel button
@@ -68,7 +69,8 @@ public class PatientDetailsFrame extends JFrame {
         c.add(cancelBtn);
 
         // add by patient ID
-        JLabel addByPatientId = new JLabel("Enter Patient ID:");
+
+        // get an arrayList of patient IDs
         ArrayList<String> patientIdList = patientList.stream()
                 .map(Patient::getPatientId)
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -78,7 +80,6 @@ public class PatientDetailsFrame extends JFrame {
         searchPatientId.getEditor().getEditorComponent().addKeyListener(keyHandle);
 
         addPatientBtn = new JButton("Add");
-//        addPatientBtn.setEnabled(false);
         addPatientBtn.addActionListener(btnHandle);
 
         addPatientStatus = new JLabel("Enter your Patient ID, If you already have register.");
@@ -89,10 +90,6 @@ public class PatientDetailsFrame extends JFrame {
         c.add(searchPatientId);
         c.add(addPatientStatus);
         this.add(addPatientBtn);
-
-        // Divider
-        Line2D divider = new Line2D.Float(0,40,30,30);
-//        c.add(divider);
 
         // labels
         JLabel nameLabel = new JLabel("Name:");
@@ -205,9 +202,6 @@ public class PatientDetailsFrame extends JFrame {
         return consultation;
     }
 
-    public static Encryptor getEncryptor() {
-        return encryptor;
-    }
 
     public static void storeConsultationsData(){
         try {
@@ -218,7 +212,7 @@ public class PatientDetailsFrame extends JFrame {
                 objectOutputStream.writeObject(consultation);
             }
             objectOutputStream.close();
-            System.out.println("Data successfully stored in a file..");
+            System.out.println("Consultation data successfully stored in a file..");
         }catch (IOException e){
             System.out.println("An error occurred.." + e);
         }
@@ -233,24 +227,15 @@ public class PatientDetailsFrame extends JFrame {
                 Consultation consultationObj = (Consultation) objectInputStream.readObject();
                 consultationList.add(consultationObj);
 
-//                if (!consultationList.contains(consultationObj)){ // duplicate error
-//                    consultationList.add(consultationObj);
-//                }
                 if (!patientList.contains(consultationObj.getPatient())){
                     patientList.add(consultationObj.getPatient());
-                }
-                for (Consultation con : consultationList){
-                    System.out.println(con.getPatient().getPatientId());
-                }
-                for (Patient p : patientList){
-                    System.out.println(p.toString());
                 }
             }
             System.out.println("Consultation data successfully loaded..");
         }catch (IOException e){
             System.out.println("an error occurred when loading data "+ e);
         } catch (ClassNotFoundException e) {
-            System.out.println("Clas not found..");
+            System.out.println("Class not found..");
         }
     }
 
@@ -274,15 +259,23 @@ public class PatientDetailsFrame extends JFrame {
     }
     public boolean isDoctorAvailable (Doctor doctor, LocalDateTime startTime, LocalDateTime endTime){
         boolean doctorAvailability = true;
-        System.out.println("in doc available meth");
-        for (Consultation consultation: consultationList) {
-            if (consultation.getDoctor() == doctor) {
+//        System.out.println("in doc available meth");
+        for (Consultation consul : consultationList) {
+//            System.out.println("in loop");
+            System.out.println(doctor.getName() + " -> " + consul.getDoctor().getName());
+            if (Objects.equals(consul.getDoctor().getMedicalLicenseNo(), doctor.getMedicalLicenseNo())) {
+//                System.out.println("same doctor");
+//                System.out.println(">>old->"+consul.getStartTime()+" -> "+consul.getEndTime());
+//                System.out.println(">>new -> "+startTime+" -> "+endTime);
                 // does time overlap condition
-                if (consultation.getStartTime().isBefore(startTime) && consultation.getEndTime().isAfter(startTime) ||
-                        consultation.getStartTime().isBefore(endTime) && consultation.getEndTime().isAfter(endTime) ||
-                        consultation.getStartTime().isBefore(startTime) && consultation.getEndTime().isAfter(endTime) ||
-                        consultation.getStartTime().isAfter(startTime) && consultation.getEndTime().isBefore(endTime))
+                if ((consul.getStartTime().isBefore(startTime) && consul.getEndTime().isAfter(startTime)) ||
+                        (consul.getStartTime().isBefore(endTime) && consul.getEndTime().isAfter(endTime)) ||
+                        (consul.getStartTime().isBefore(startTime) && consul.getEndTime().isAfter(endTime)) ||
+                        (consul.getStartTime().isAfter(startTime) && consul.getEndTime().isBefore(endTime)) ||
+                        consul.getStartTime().isEqual(startTime) || consul.getEndTime().isEqual(endTime))
                 {
+//                    System.out.println("overlapping\nold->"+consul.getStartTime()+" -> "+consul.getEndTime());
+//                    System.out.println("new -> "+startTime+" -> "+endTime);
                     doctorAvailability = false;
                     break;
                 }
@@ -332,14 +325,18 @@ public class PatientDetailsFrame extends JFrame {
                 }
 
             } else if (e.getSource() == addFileBtn){
+                // initialize file chooser & and filter
                 JFileChooser addFile = new JFileChooser(FileSystemView.getFileSystemView());
+                FileNameExtensionFilter validFiles = new FileNameExtensionFilter("Image Files", "bmp", "jpg", "jpeg", "wbmp", "png", "gif");
+                addFile.setFileFilter(validFiles);
+
                 int r = addFile.showSaveDialog(null);
                 if (r == JFileChooser.APPROVE_OPTION ){
                     addFileStatus.setText("Selected: " + addFile.getSelectedFile().getName());
 
                     // encrypt image path & store
                     String imagePath = addFile.getSelectedFile().toString();
-                    String encryptedImgPath = encryptor.encryptData(imagePath);
+                    String encryptedImgPath = Encryptor.encryptData(imagePath);
                     consultation.setImage(encryptedImgPath);
                 }else {
                     addFileStatus.setText("No file selected");
@@ -414,7 +411,7 @@ public class PatientDetailsFrame extends JFrame {
                     }
 
                     // encrypt note
-                    String encryptedNote = encryptor.encryptData(notes);
+                    String encryptedNote = Encryptor.encryptData(notes);
 
                     // add data to class
                     consultation.setDate(consultationDate);
@@ -444,12 +441,19 @@ public class PatientDetailsFrame extends JFrame {
 
                 // finding matching IDs
                 ArrayList<String> suggestedIdList = new ArrayList<>();
-                for (Patient patient: patientList){
-                    String tempID = patient.getPatientId().substring(0,inputLength);
-                    if (input.equalsIgnoreCase(tempID)){
-                        suggestedIdList.add(patient.getPatientId());
+
+                try {
+                    for (Patient patient: patientList){
+                        String tempID = patient.getPatientId().substring(0,inputLength);
+                        if (input.equalsIgnoreCase(tempID)){
+                            suggestedIdList.add(patient.getPatientId());
+                        }
+                        addPatientStatus.setText("Searching..");
                     }
+                }catch (StringIndexOutOfBoundsException c){
+                    addPatientStatus.setText("No Results found..");
                 }
+
 
                 searchPatientId.removeAllItems();
                 // displaying updated suggestions

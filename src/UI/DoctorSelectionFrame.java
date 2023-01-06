@@ -9,6 +9,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 
 public class DoctorSelectionFrame extends JFrame {
@@ -20,6 +22,7 @@ public class DoctorSelectionFrame extends JFrame {
     private JRadioButton[] doctorRadioBtn = new JRadioButton[doctorList.size()];
 
     public DoctorSelectionFrame() {
+        // JPanels
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER,120,20));
         JPanel doctorSelectPanel = new JPanel();
 
@@ -39,8 +42,11 @@ public class DoctorSelectionFrame extends JFrame {
 
         JScrollPane scrollPane = new JScrollPane(doctorTable);
         scrollPane.setPreferredSize(new Dimension(500, 100));
+
         // register event handler
         ButtonHandler buttonHandle = new ButtonHandler();
+        WindowHandler windowHandle = new WindowHandler();
+        this.addWindowListener(windowHandle);
 
         // Back button
         backBtn.setText("Back");
@@ -61,7 +67,8 @@ public class DoctorSelectionFrame extends JFrame {
         ButtonGroup buttonGroup = new ButtonGroup();
         int locationY = 150;
         for (int i=0; i<doctorList.size(); i++){
-            doctorRadioBtn[i] = new JRadioButton(doctorList.get(i).getName());
+            String fullName = doctorList.get(i).getName() +" "+ doctorList.get(i).getSurname();
+            doctorRadioBtn[i] = new JRadioButton("Dr." + fullName);
             buttonGroup.add(doctorRadioBtn[i]);
             doctorRadioBtn[i].setBounds(120,locationY,120,50);
             doctorSelectPanel.add(doctorRadioBtn[i]);
@@ -80,7 +87,7 @@ public class DoctorSelectionFrame extends JFrame {
         this.add(doctorSelectPanel, BorderLayout.SOUTH);
 
         // setting view
-        this.setTitle("View doctors' details");
+        this.setTitle("Select a Doctor");
         this.setSize(700,630);
         this.setVisible(true);
         this.setLayout(new FlowLayout(FlowLayout.CENTER,100,20));
@@ -88,9 +95,6 @@ public class DoctorSelectionFrame extends JFrame {
         this.setResizable(false);
     }
 
-    public static void main(String[] args) {
-        new DoctorSelectionFrame();
-    }
     public int getSelectedRadioBtn(JRadioButton[] doctorRadioBtn){
         for (int i=0; i<doctorRadioBtn.length; i++){
             if (doctorRadioBtn[i].isSelected()){
@@ -113,10 +117,26 @@ public class DoctorSelectionFrame extends JFrame {
                     JOptionPane.showMessageDialog(nextBtn, "Pls select a Doctor","ERROR", JOptionPane.ERROR_MESSAGE);
                 }else {
                     Consultation consultation = new Consultation();
-                    consultation.setDoctor(doctorList.get(selectedDoctor));
+                    consultation.setDoctor(doctorList.get(selectedDoctor)); // setting a doctor
                     DoctorSelectionFrame.this.dispose();
                     new PatientDetailsFrame(consultation);
                 }
+            }
+        }
+    }
+    private class WindowHandler extends WindowAdapter {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            DoctorSelectionFrame.this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            int confirmed = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to exit the program?", "Exit Program Message Box",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirmed == JOptionPane.YES_OPTION) {
+                super.windowClosing(e);
+                WSCM.setIsGuiOpen(false);
+            }else {
+                setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             }
         }
     }

@@ -164,6 +164,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
             String specialisation = stringValidation("Enter Doctor's specialisation: ",input, "text");
 
             doctorsList.add(new Doctor(name,surname,DOB,mobileNo,medicalLicenceNo,specialisation));
+            System.out.println("New Doctor added..");
         }else {
             System.out.println(MAX_DOCTORS_COUNT+" doctors already enrolled..\nPls try again later..");
         }
@@ -248,14 +249,14 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     @Override
     public void storeData(){
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream("data.txt");
+            FileOutputStream fileOutputStream = new FileOutputStream("doctorsData.txt");
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 
             for (Doctor doctor : doctorsList){
                 objectOutputStream.writeObject(doctor);
             }
             objectOutputStream.close();
-            System.out.println("Data successfully stored in a file..");
+            System.out.println("Doctors data successfully stored in a file..");
         }catch (IOException e){
             System.out.println("An error occurred.." + e);
         }
@@ -267,7 +268,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
     @Override
     public void loadData(){
         try {
-            FileInputStream fileInputStream = new FileInputStream("data.txt");
+            FileInputStream fileInputStream = new FileInputStream("doctorsData.txt");
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
             while ((fileInputStream.available() > 0)){
@@ -285,7 +286,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     break;
                 }
             }
-            System.out.println("File successfully loaded..");
+            System.out.println("Doctor file successfully loaded..");
         }catch (IOException e){
             System.out.println("an error occurred when loading data "+ e);
         } catch (ClassNotFoundException e) {

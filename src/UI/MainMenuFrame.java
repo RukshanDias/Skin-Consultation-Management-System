@@ -3,14 +3,16 @@ package UI;
 import Console.WestminsterSkinConsultationManager;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 
 public class MainMenuFrame extends JFrame {
-    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
+    private WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
     private JButton displayDoctorsBtn = new JButton("<html><div style='border-radius:50%;'>");
     private JButton addConsultationBtn = new JButton();
-    private Color mainBgColor = new Color(240, 208, 144);
+    private JButton viewHistoryBtn = new JButton();
+    private final Color mainBgColor = new Color(240, 208, 144);
 
 
     public MainMenuFrame(){
@@ -20,6 +22,7 @@ public class MainMenuFrame extends JFrame {
         JPanel msgPanel= new JPanel();
         JPanel optionsPanel = new JPanel();
         JPanel mainContainer = new JPanel();
+        JPanel footerPanel = new JPanel();
 
         //        Img section
         ImageIcon homeImage = new ImageIcon(getClass().getResource("/UI/images/mainMenuImg.png"));
@@ -60,21 +63,40 @@ public class MainMenuFrame extends JFrame {
         addConsultationBtn.setFocusable(false);
         addConsultationBtn.addActionListener(btnHandle);
 
+        viewHistoryBtn.setText("View appointment History");
+        viewHistoryBtn.setIcon(new ImageIcon(getClass().getResource("/UI/images/history.png")));
+        viewHistoryBtn.setFocusable(false);
+        viewHistoryBtn.addActionListener(btnHandle);
+
         // Adding elements to panels and frame
         optionsPanel.add(displayDoctorsBtn);
         optionsPanel.add(addConsultationBtn);
+        optionsPanel.add(viewHistoryBtn);
         optionsPanel.setBackground(mainBgColor);
+
+        //
+        footerPanel.setLayout(new FlowLayout(FlowLayout.CENTER,45,40));
+        JLabel doctorCount = new JLabel("<html>Doctors <br/>Count: "+ WSCM.getDoctorsList().size());
+        doctorCount.setIcon(new ImageIcon(getClass().getResource("/UI/images/doctor.png")));
+
+        JLabel patientCount = new JLabel("<html>Patients <br/> Count: "+ PatientDetailsFrame.getPatientList().size());
+        patientCount.setIcon(new ImageIcon(getClass().getResource("/UI/images/patient.png")));
+
+        footerPanel.add(doctorCount);
+        footerPanel.add(patientCount);
+        footerPanel.setBackground(mainBgColor);
 
         mainContainer.add(imgPanel, BorderLayout.NORTH);
         mainContainer.add(msgPanel, BorderLayout.NORTH);
         mainContainer.add(optionsPanel,BorderLayout.CENTER);
+        mainContainer.add(footerPanel, BorderLayout.SOUTH);
         mainContainer.setBackground(mainBgColor);
 
 
         this.add(mainContainer);
 
         this.setTitle("Westminster skin consultation center");
-        this.setSize(400,600);
+        this.setSize(400,700);
         this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -90,6 +112,9 @@ public class MainMenuFrame extends JFrame {
             } else if (e.getSource() == addConsultationBtn) {
                 MainMenuFrame.this.dispose();
                 new DoctorSelectionFrame();
+            } else if (e.getSource() == viewHistoryBtn) {
+                MainMenuFrame.this.dispose();
+                new ViewPatientHistory();
             }
         }
     }
@@ -103,7 +128,6 @@ public class MainMenuFrame extends JFrame {
                     JOptionPane.YES_NO_OPTION);
 
             if (confirmed == JOptionPane.YES_OPTION) {
-//                dispose();
                 super.windowClosing(e);
                 WSCM.setIsGuiOpen(false);
             }else {

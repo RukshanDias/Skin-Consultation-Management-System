@@ -58,7 +58,7 @@ public class Encryptor {
      * @param key - key that used to encrypt
      * @return decrypted String message
      */
-    public static String decryptData(String encryptedMessage, SecretKeySpec key) {
+    public static String decryptData(String encryptedMessage, SecretKeySpec key) throws NullPointerException{
         String decryptedMsg = "";
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -66,8 +66,14 @@ public class Encryptor {
 
             decryptedMsg = new String(cipher.doFinal(Base64.getDecoder()
                     .decode(encryptedMessage)));
-            System.out.println(decryptedMsg);
-        } catch (Exception e){
+            if (decryptedMsg.isBlank()){
+                decryptedMsg = "N/A";
+            }
+        }
+        catch (NullPointerException n){
+            decryptedMsg = "N/A";
+        }
+        catch (Exception e){
             System.out.println("Error occur when decrypting data "+e);
         }
         return decryptedMsg;

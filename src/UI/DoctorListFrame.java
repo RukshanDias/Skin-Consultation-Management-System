@@ -8,12 +8,13 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 
 public class DoctorListFrame extends JFrame {
-    WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
-
-    LinkedList <Doctor> doctorList= WSCM.getDoctorsList();
+    private WestminsterSkinConsultationManager WSCM = new WestminsterSkinConsultationManager();
+    private LinkedList <Doctor> doctorList= WSCM.getDoctorsList();
     private JButton backBtn = new JButton();
     private JButton sortBtn = new JButton();
     private JTable doctorTable = new JTable();
@@ -31,7 +32,6 @@ public class DoctorListFrame extends JFrame {
             docTableModel.addRow(new Object[] {doctor.getName(), doctor.getSurname(), doctor.getDOB(), doctor.getMobileNo(), doctor.getMedicalLicenseNo(), doctor.getSpecialisation()});
         }
 
-//        JTable doctorTable = new JTable(docTableModel);
         doctorTable.setAutoCreateRowSorter(true);
         doctorTable.setModel(docTableModel);
         doctorTable.setBounds(0,40,200,300);
@@ -41,6 +41,8 @@ public class DoctorListFrame extends JFrame {
 
         // register event handler
         ButtonHandler buttonHandle = new ButtonHandler();
+        WindowHandler windowHandle = new WindowHandler();
+        this.addWindowListener(windowHandle);
 
         // Sort button
         sortBtn.setText("Sort");
@@ -75,12 +77,10 @@ public class DoctorListFrame extends JFrame {
         this.setSize(700,830);
         this.setVisible(true);
         this.setLayout(null);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-    }
-
-    public static void main(String[] args) {
-        DoctorListFrame d1= new DoctorListFrame();
+        this.getContentPane().setBackground(new Color(240, 208, 144));
     }
 
     private class ButtonHandler implements ActionListener{
@@ -95,5 +95,20 @@ public class DoctorListFrame extends JFrame {
             }
         }
     }
+    private class WindowHandler extends WindowAdapter {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            DoctorListFrame.this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            int confirmed = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to exit the program?", "Exit Program Message Box",
+                    JOptionPane.YES_NO_OPTION);
 
+            if (confirmed == JOptionPane.YES_OPTION) {
+                super.windowClosing(e);
+                WSCM.setIsGuiOpen(false);
+            }else {
+                setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+            }
+        }
+    }
 }
