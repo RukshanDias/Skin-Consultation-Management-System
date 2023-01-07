@@ -22,18 +22,20 @@ public class Consultation implements Serializable {
     public Consultation(){
 
     }
-    public Consultation(Doctor doctor, Patient patient, LocalDate date, long duration, double cost, String note) {
+    public Consultation(Doctor doctor, Patient patient, LocalDate date, long duration, LocalDateTime startTime, LocalDateTime endTime, double cost, String note, String image) {
         this.doctor = doctor;
         this.patient = patient;
         this.date = date;
         this.duration = duration;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.cost = cost;
         this.note = note;
+        this.image = image;
     }
 
     public double calculateTotalCost(Patient patient){
         int durationHours = (int) this.duration;
-        System.out.println("patient consul count in costcal ->"+patient.getConsultationCount());
         return (patient.getConsultationCount() < 1) ? durationHours * firstConsulCost : durationHours * normalCost;
     }
 
