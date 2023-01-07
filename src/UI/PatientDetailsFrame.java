@@ -212,6 +212,7 @@ public class PatientDetailsFrame extends JFrame {
                 objectOutputStream.writeObject(consultation);
             }
             objectOutputStream.close();
+            fileOutputStream.close();
             System.out.println("Consultation data successfully stored in a file..");
         }catch (IOException e){
             System.out.println("An error occurred.." + e);
@@ -231,6 +232,8 @@ public class PatientDetailsFrame extends JFrame {
                     patientList.add(consultationObj.getPatient());
                 }
             }
+            objectInputStream.close();
+            fileInputStream.close();
             System.out.println("Consultation data successfully loaded..");
         }catch (IOException e){
             System.out.println("an error occurred when loading data "+ e);

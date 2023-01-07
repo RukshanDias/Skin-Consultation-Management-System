@@ -256,6 +256,7 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                 objectOutputStream.writeObject(doctor);
             }
             objectOutputStream.close();
+            fileOutputStream.close();
             System.out.println("Doctors data successfully stored in a file..");
         }catch (IOException e){
             System.out.println("An error occurred.." + e);
@@ -286,6 +287,8 @@ public class WestminsterSkinConsultationManager implements SkinConsultationManag
                     break;
                 }
             }
+            objectInputStream.close();
+            fileInputStream.close();
             System.out.println("Doctor file successfully loaded..");
         }catch (IOException e){
             System.out.println("an error occurred when loading data "+ e);
