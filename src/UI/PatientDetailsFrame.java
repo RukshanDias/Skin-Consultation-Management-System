@@ -259,14 +259,8 @@ public class PatientDetailsFrame extends JFrame {
     }
     public boolean isDoctorAvailable (Doctor doctor, LocalDateTime startTime, LocalDateTime endTime){
         boolean doctorAvailability = true;
-//        System.out.println("in doc available meth");
         for (Consultation consul : consultationList) {
-//            System.out.println("in loop");
-            System.out.println(doctor.getName() + " -> " + consul.getDoctor().getName());
             if (Objects.equals(consul.getDoctor().getMedicalLicenseNo(), doctor.getMedicalLicenseNo())) {
-//                System.out.println("same doctor");
-//                System.out.println(">>old->"+consul.getStartTime()+" -> "+consul.getEndTime());
-//                System.out.println(">>new -> "+startTime+" -> "+endTime);
                 // does time overlap condition
                 if ((consul.getStartTime().isBefore(startTime) && consul.getEndTime().isAfter(startTime)) ||
                         (consul.getStartTime().isBefore(endTime) && consul.getEndTime().isAfter(endTime)) ||
@@ -274,8 +268,6 @@ public class PatientDetailsFrame extends JFrame {
                         (consul.getStartTime().isAfter(startTime) && consul.getEndTime().isBefore(endTime)) ||
                         consul.getStartTime().isEqual(startTime) || consul.getEndTime().isEqual(endTime))
                 {
-//                    System.out.println("overlapping\nold->"+consul.getStartTime()+" -> "+consul.getEndTime());
-//                    System.out.println("new -> "+startTime+" -> "+endTime);
                     doctorAvailability = false;
                     break;
                 }
